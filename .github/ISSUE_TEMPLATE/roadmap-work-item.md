@@ -1,10 +1,9 @@
 ---
 name: Roadmap Work Item
-about: Describe this issue template's purpose here.
-title: ''
-labels: feature
-assignees: ''
-
+about: Create a scoped issue tied to a roadmap milestone, area, priority, and completion criteria
+title: "Area: concise action-oriented title"
+labels: []
+assignees: []
 ---
 
 ## Goal
