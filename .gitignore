@@ -1,2 +1,6 @@
 # Local config files
 global.json
+
+# Build output
+bin/
+obj/
