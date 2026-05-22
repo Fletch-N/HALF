@@ -1,5 +1,59 @@
 ﻿namespace HALF.Cli;
 
+internal interface ICommandHandler
+{
+    string CommandName { get; }
+    int Execute(string[] args);
+}
+
+internal sealed class RunCommandHandler : ICommandHandler
+{
+    public string CommandName => "run";
+
+    public int Execute(string[] args)
+    {
+        Console.WriteLine("Run command is scaffolded but not implemented yet.");
+        Console.WriteLine("Focus remains on building the observability-first runtime baseline.");
+        return 0;
+    }
+}
+
+internal sealed class BenchmarkCommandHandler : ICommandHandler
+{
+    public string CommandName => "benchmark";
+
+    public int Execute(string[] args)
+    {
+        Console.WriteLine("Benchmark command is scaffolded but not implemented yet.");
+        Console.WriteLine("Focus remains on building the observability-first runtime baseline.");
+        return 0;
+    }
+}
+
+internal sealed class TraceCommandHandler : ICommandHandler
+{
+    public string CommandName => "trace";
+
+    public int Execute(string[] args)
+    {
+        Console.WriteLine("Trace command is scaffolded but not implemented yet.");
+        Console.WriteLine("Focus remains on building the observability-first runtime baseline.");
+        return 0;
+    }
+}
+
+internal sealed class StatusCommandHandler : ICommandHandler
+{
+    public string CommandName => "status";
+
+    public int Execute(string[] args)
+    {
+        Console.WriteLine("Status command is scaffolded but not implemented yet.");
+        Console.WriteLine("Focus remains on building the observability-first runtime baseline.");
+        return 0;
+    }
+}
+
 internal static class Program
 {
     private enum CliCommand
@@ -29,11 +83,16 @@ internal static class Program
             return 0;
         }
 
-        if (TryParseCommand(args[0], out var command))
+        switch (TryParseCommand(args[0], out var command))
         {
-            Console.WriteLine($"'{command}' is scaffolded but not implemented yet.");
-            Console.WriteLine("Focus remains on building the observability-first runtime baseline.");
-            return 0;
+            case true when command == CliCommand.Run:
+                return new RunCommandHandler().Execute(args[1..]);
+            case true when command == CliCommand.Benchmark:
+                return new BenchmarkCommandHandler().Execute(args[1..]);
+            case true when command == CliCommand.Trace:
+                return new TraceCommandHandler().Execute(args[1..]);
+            case true when command == CliCommand.Status:
+                return new StatusCommandHandler().Execute(args[1..]);
         }
 
         Console.Error.WriteLine($"Unknown command: {args[0]}");
