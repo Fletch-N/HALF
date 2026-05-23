@@ -1,5 +1,7 @@
 <Solution>
   <Project Name="HALF.Cli" Path="src/HALF.Cli/HALF.Cli.csproj" />
+  <Project Name="HALF.Host" Path="src/HALF.Host/HALF.Host.csproj" />
+
   <Folder Name="/src/" />
   <Folder Name="/tests/" />
 </Solution>
