@@ -54,9 +54,14 @@ HALF targets **.NET 10** utilizing the new `.slnx` solution format.
 dotnet build HALF.slnx -v minimal
 ```
 
-**Run the observability test surface:**
+**Run the solution:**
 ```powershell
-dotnet test tests/HALF.Watch.Tests/HALF.Watch.Tests.csproj -v minimal
+dotnet run --project ./src/HALF.Cli help
+```
+
+**Run the test surface:**
+```powershell
+dotnet test -v minimal
 ```
 
 ## Solution Directory
