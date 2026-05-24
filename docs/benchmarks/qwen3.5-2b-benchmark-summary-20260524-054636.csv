@@ -1,0 +1,7 @@
+"PromptID","Category","Runs","SuccessfulRuns","AvgLoadMs","AvgPromptMs","AvgGenerationMs","AvgTotalMs","AvgPromptTokens","AvgCompletionTokens","AvgTokPerSec"
+"P00","Warmup","3","3","8638","49","453","9307","53","30","66.38"
+"P01","General reasoning","3","3","298","57","3189","3808","102","209.33","65.59"
+"P02","Code generation","3","2","310","58","7189","8064","97","465","64.71"
+"P03","Code editing","3","3","310","57","2405","3009","102","154","64.04"
+"P04","Tool-use planning","3","3","287","64","3091","3700","127","199.67","64.66"
+"P05","Summarization","3","3","306","77","4749","5509","137","310","65.27"

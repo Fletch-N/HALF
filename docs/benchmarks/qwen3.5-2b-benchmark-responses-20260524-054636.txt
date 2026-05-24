@@ -1,0 +1,199 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "Constrained hardware implies limited compute, memory, and network bandwidth. A distributed multi-service architecture introduces network latency, serialization overhead, and complex coordination logic that directly contradicts the goal of being 'simple' and 'useful' for a small team. The primary value of the assistant is immediate local utility; adding distributed components delays this value. The 'observable' requirement can be met via local logging and file-based state persistence rather than distributed event streams.",
+  "tradeoffs": {
+    "complexity": "Low (Single service)",
+    "latency": "High (Single service)",
+    "scalability": "Low (Single service)",
+    "maintenance": "High (Single service)",
+    "network dependency": "None (Single service)"
+  },
+  "risk": "Single point of failure (if the local service crashes, the assistant stops), but mitigated by local persistence and a simple restart mechanism.",
+  "confidence": "High",
+  "justification": "The constraints (constrained hardware, small team, local focus) make network complexity a primary anti-pattern. The 'observable' requirement is satisfied by standard local logging and file-based state management, which is more robust for constrained environments than distributed event sourcing."
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "Constrained hardware implies limited compute, memory, and network bandwidth. A distributed multi-service architecture introduces significant complexity in network synchronization, state consistency, and fault tolerance, which directly contradicts the goal of avoiding overengineering. A single-service approach allows for rapid iteration, easier debugging, and a simpler deployment model suitable for local development.",
+  "tradeoffs": "Higher single-point of failure risk and potential for resource contention, but these are mitigated by the 'simple' nature of the prototype and the assumption that the local environment is isolated.",
+  "risk": "Single point of failure (SPOF) if the service crashes, and potential for resource exhaustion under heavy local load.",
+  "confidence": "High"
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "The target is a 'small team' building a 'local development assistant' on 'constrained hardware'. A distributed multi-service architecture introduces significant complexity in networking, state synchronization, and fault tolerance that contradicts the goal of avoiding overengineering. A single-service approach allows for rapid iteration, easier debugging, and a simpler deployment model suitable for local development.",
+  "tradeoffs": {
+    "complexity": "Lower",
+    "scalability": "Limited to local/single-node",
+    "latency": "Higher (single hop)",
+    "maintenance": "Simpler codebase"
+  },
+  "risk": "Single point of failure if the local machine crashes; potential for resource exhaustion on constrained hardware if not carefully managed.",
+  "confidence": "High"
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: Yes
+{
+  "summary": "A lightweight C# utility class implementing asynchronous retry logic with exponential backoff and CancellationToken support.",
+  "code": "using System;\nusing System.Collections.Generic;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace RetryPolicy\n{\n    public static class RetryPolicy\n    {\n        private static readonly int MaxAttempts = 3;\n        private static readonly int InitialDelay = 100;\n        private static readonly int MaxDelay = 1000;\n        private static readonly double BackoffMultiplier = 2.0;\n\n        public static async Task<T> RetryAsync<T>(\n            Func<Task<T>> operation,\n            CancellationToken cancellationToken,\n            int maxAttempts,\n            int initialDelay,\n            int maxDelay,\n            double backoffMultiplier)\n        {\n            var attempts = new List<Task<T>>();\n            var lastError = default;\n\n            for (int attempt = 0; attempt < maxAttempts; attempt++)\n            {\n                var task = operation();\n                attempts.Add(task);\n\n                if (cancellationToken.IsCancellationRequested)\n                {\n                    break;\n                }\n\n                try\n                {\n                    await task.ConfigureAwait(false);\n                    return task.Result;\n                }\n                catch (OperationCanceledException)\n                {\n                    break;\n                }\n                catch (Exception ex)\n                {\n                    lastError = ex;\n                    await Task.Delay(initialDelay, cancellationToken).ConfigureAwait(false);\n                    if (attempt < maxAttempts - 1)\n                    {\n                        await Task.Delay(maxDelay * (1 + attempt * backoffMultiplier), cancellationToken).ConfigureAwait(false);\n                    }\n                }\n            }\n\n            throw lastError;\n        }\n    }\n}",
+  "notes": "- Uses built-in Task.Delay for backoff calculations.\n- Supports cancellation via CancellationToken.\n- Throws the original exception on failure.\n- Default parameters are set to reasonable defaults.",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: Yes
+{
+  "summary": "A self-contained C# utility class implementing asynchronous retry logic with exponential backoff and CancellationToken support.",
+  "code": "using System;\nusing System.Collections.Concurrent;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace RetryPolicy\n{\n    public static class RetryPolicy\n    {\n        private static readonly int MaxAttempts = 5;\n        private static readonly TimeSpan InitialBackoff = TimeSpan.FromSeconds(1);\n        private static readonly TimeSpan MaxBackoff = TimeSpan.FromSeconds(60);\n        private static readonly double BackoffMultiplier = 2.0;\n\n        public static async Task<T> RetryAsync<T>(\n            Func<Task<T>> operation,\n            CancellationToken cancellationToken,\n            int maxAttempts = MaxAttempts,\n            TimeSpan initialBackoff = InitialBackoff,\n            TimeSpan maxBackoff = MaxBackoff,\n            double backoffMultiplier = BackoffMultiplier)\n        {\n            var lastError = default;\n            var lastException = default;\n            var lastBackoff = initialBackoff;\n\n            for (int attempt = 1; attempt <= maxAttempts; attempt++)\n            {\n                try\n                {\n                    return await operation(cancellationToken);\n                }\n                catch (OperationCanceledException)\n                {\n                    throw;\n                }\n                catch (Exception ex)\n                {\n                    lastError = ex;\n                    lastException = ex;\n                    lastBackoff = lastBackoff * backoffMultiplier;\n\n                    if (attempt < maxAttempts)\n                    {\n                        await Task.Delay(lastBackoff, cancellationToken);\n                    }\n                }\n            }\n\n            throw lastException;\n        }\n    }\n}",
+  "notes": "- Uses `Task.Delay` with `CancellationToken` for non-blocking delays.\n- Implements exponential backoff: `initial * multiplier ^ (attempt - 1)`. \n- Throws the original exception on failure after max attempts.\n- No external dependencies required.",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: No
+{
+  "summary": "A lightweight C# utility class implementing asynchronous retry logic with exponential backoff and CancellationToken support, without external dependencies.",
+  "code": "using System;\nusing System.Collections.Generic;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace RetryPolicy\n{\n    public class RetryPolicy\n    {\n        private readonly int _maxAttempts;\n        private readonly TimeSpan _initialDelay;\n        private readonly TimeSpan _maxDelay;\n        private readonly Func<Task> _operation;\n        private readonly CancellationTokenSource? _cts;\n        private readonly TaskCompletionSource? _tcs;\n        private readonly int _retryCount;\n\n        public RetryPolicy(\n            int maxAttempts,\n            TimeSpan initialDelay,\n            TimeSpan maxDelay,\n            Func<Task> operation,\n            int retryCount = 3)\n        {\n            _maxAttempts = maxAttempts;\n            _initialDelay = initialDelay;\n            _maxDelay = maxDelay;\n            _operation = operation;\n            _retryCount = retryCount;\n        }\n\n        public async Task<bool> ExecuteAsync(CancellationToken cancellationToken)\n        {\n            _cts = new CancellationTokenSource();\n            _tcs = new TaskCompletionSource<bool>();\n\n            var lastError = default;\n            var lastException = default;\n\n            for (int attempt = 1; attempt <= _maxAttempts; attempt++)\n            {\n                _cts.CancelToken.Cancel();\n                _tcs.TrySetCanceled(cancellationToken);\n\n                try\n                {\n                    var result = await _operation(cancellationToken);\n                    _tcs.TrySetResult(result);\n                    return true;\n                }\n                catch (OperationCanceledException)\n                {\n                    _tcs.TrySetCanceled(cancellationToken);\n                    break;\n                }\n                catch (Exception ex)\n                {\n                    lastError = ex;\n                    lastException = ex;\n\n                    if (attempt < _maxAttempts)\n                    {\n                        var delay = _initialDelay * Math.Pow(2, attempt - 1);\n                        if (delay > _maxDelay)\n                            delay = _maxDelay;\n\n                        await Task.Delay(delay, cancellationToken);\n                    }\n                }\n            }\n\n            _tcs.TrySetException(lastException);\n            return false;\n        }\n    }\n}",
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+  "likely_bug": "Null reference exception when input is null",
+  "minimal_change": "Add null check before calling Count()",
+  "patch": "diff --git a/CountItems.cs b/CountItems\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1,5 +1,7 @@\n public static int CountItems(IEnumerable<string> items) {\n- return items.Count();\n+ if (items == null) {\n+     return 0;\n+ }\n+ return items.Count();\n }",
+  "confidence": 100
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+  "likely_bug": "Null reference exception when input is null",
+  "minimal_change": "Add null check before calling Count()",
+  "patch": "diff --git a/CountItems.cs b/CountItems\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1,5 +1,7 @@\n public static int CountItems(IEnumerable<string> items) {\n- return items.Count();\n+ if (items == null) {\n+     return 0;\n+ }\n+ return items.Count();\n }",
+  "confidence": 100
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+  "likely_bug": "Null reference exception when input is null",
+  "minimal_change": "Add null check before calling Count()",
+  "patch": "diff --git a/CountItems.cs b/CountItems\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1,5 +1,7 @@\n public static int CountItems(IEnumerable<string> items) {\n- return items.Count();\n+ if (items == null) {\n+     return 0;\n+ }\n+ return items.Count();\n }",
+  "confidence": 100
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{
+  "likely_cause": "The build failure is caused by a symbol mismatch between the renamed class and its references in other files. When a class is renamed, all internal references (e.g., `using` statements, method calls, or variable assignments) must be updated to match the new name. If these references were not updated, the compiler will fail to resolve the symbol.",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": "symbol_name",
+  "followup_tools": [
+    "search_files(query)",
+    "inspect_file(path)"
+  ],
+  "stop_condition": "Identified the specific file(s) containing references to the old class name and confirmed they need to be updated to the new name.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": "The build failure is caused by a symbol mismatch between the renamed class and its references in the codebase. When a class is renamed, all internal references (e.g., `using` statements, method calls, or type references) must be updated to match the new name. If these references were not updated, the compiler will fail to resolve the symbol.",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": "symbol_name: [new_class_name]",
+  "followup_tools": [
+    "search_files(query: 'using [new_class_name]')",
+    "search_files(query: 'using [old_class_name]')",
+    "list_recent_changes()"
+  ],
+  "stop_condition": "If `search_symbols` returns the new class name as a symbol, the references are missing. If `search_files` finds references to the old name, they must be updated. If `list_recent_changes` shows no recent modifications, the issue is likely a stale build cache or a missing dependency, and the fix involves cleaning the build artifacts.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": "The build failure is caused by a symbol mismatch between the renamed class and its references in other files. When a class is renamed, all internal references (e.g., `using` statements, method calls, or variable assignments) must be updated to match the new name. If these references were not updated, the compiler will fail to resolve the symbol.",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": "symbol_name",
+  "followup_tools": [
+    "search_files(query)",
+    "inspect_file(path)"
+  ],
+  "stop_condition": "Identify the specific file(s) containing references to the old class name, update them to the new name, and re-run the build to verify the fix.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B evaluated their performance on structured output tasks, prioritizing reliability and schema adherence over raw response speed. Model A completed tasks in 4.2 seconds and successfully generated valid JSON, though it occasionally produced unsupported factual claims. Model B responded significantly faster at 2.8 seconds but failed to adhere to the requested schema twice during testing.",
+  "key_findings": [
+    "Model A achieved valid JSON output in 4.2 seconds.",
+    "Model B responded faster at 2.8 seconds but failed to follow the requested schema twice.",
+    "Both models were evaluated under identical context length and output token limit constraints.",
+    "The benchmark explicitly prioritizes reliability and structured output over raw speed.",
+    "Model A showed occasional hallucinations regarding unsupported factual claims."
+  ],
+  "recommendation": "Model A is recommended for tasks requiring guaranteed valid JSON output, despite its slightly slower response time. Model B is unsuitable for structured output tasks due to its repeated failure to adhere to the schema.",
+  "caveats": [
+    "The benchmark prioritizes reliability and structured output over raw speed, which may not reflect all real-world scenarios.",
+    "Model A's occasional unsupported factual claims indicate a potential risk in high-stakes or fact-dependent applications.",
+    "Model B's repeated schema failures suggest it may not be viable for applications requiring strict data formatting."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B evaluated their performance on structured output tasks, prioritizing reliability and schema adherence over raw response speed. Model A demonstrated faster response times (4.2s) and successfully generated valid JSON, though it occasionally produced unsupported factual claims. Model B responded significantly faster (2.8s) but failed to adhere to the requested schema twice.",
+  "key_findings": [
+    "Model A completed tasks in 4.2 seconds with valid JSON output.",
+    "Model B completed tasks in 2.8 seconds but failed to follow the schema twice.",
+    "Both models were tested under identical context length and output token limits.",
+    "The benchmark explicitly prioritizes reliability and structured output over raw speed.",
+    "Model A showed occasional hallucinations regarding unsupported facts."
+  ],
+  "recommendation": "Model A is recommended for tasks requiring guaranteed valid JSON output, despite its slightly slower response time. Model B is unsuitable for structured output tasks due to its repeated schema violations.",
+  "caveats": [
+    "The benchmark prioritizes reliability and structured output over raw speed, which may not reflect real-world usage scenarios where speed is critical.",
+    "Model A's occasional unsupported factual claims indicate a potential risk in high-stakes or fact-dependent applications.",
+    "Model B's repeated failures suggest it may not be viable for applications requiring consistent schema compliance."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B evaluated their performance on structured output tasks, prioritizing reliability and schema adherence over raw response speed. Model A demonstrated faster response times (4.2s) and successfully generated valid JSON, though it occasionally produced unsupported factual claims. Model B responded significantly faster (2.8s) but failed to adhere to the requested schema twice.",
+  "key_findings": [
+    "Model A completed tasks in 4.2 seconds with valid JSON output.",
+    "Model B completed tasks in 2.8 seconds but failed to follow the schema twice.",
+    "Both models were tested under identical context length and token limit constraints.",
+    "The benchmark explicitly prioritizes reliability and structured output over raw speed.",
+    "Model A showed some susceptibility to unsupported factual claims."
+  ],
+  "recommendation": "Model A is recommended for tasks requiring guaranteed valid JSON output, despite its slightly slower response time. Model B is unsuitable for structured output tasks due to its repeated failure to adhere to the schema.",
+  "caveats": [
+    "The benchmark prioritizes reliability and structured output over raw speed, meaning Model A's slightly higher latency is not necessarily a disadvantage in this specific context.",
+    "Model A's occasional unsupported factual claims indicate a potential risk in scenarios requiring high factual accuracy.",
+    "The benchmark conditions (same context length and token limit) were not explicitly stated as the only conditions, so results may vary under different constraints."
+  ]
+}
+--------------------------------------------------

@@ -1,0 +1,220 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.99
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.99
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.99
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "For a small team on constrained hardware, a monolithic single-service approach minimizes deployment complexity, reduces operational overhead, and allows rapid iteration. It avoids the latency and coordination costs of distributed systems while still providing the core functionality needed for a development assistant.",
+  "tradeoffs": [
+    "Less scalability and fault isolation compared to microservices",
+    "Tighter coupling between components makes testing harder",
+    "Harder to scale horizontally if demand grows significantly"
+  ],
+  "risk": "High risk of performance degradation if the single service becomes a bottleneck; potential for cascading failures if the service crashes.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "For a small team on constrained hardware, a monolithic single-service approach minimizes deployment complexity, reduces operational overhead, and allows rapid iteration. Distributed systems introduce significant latency, synchronization risks, and infrastructure costs that are unnecessary at this stage.",
+  "tradeoffs": [
+    "Reduced scalability compared to distributed systems",
+    "Tight coupling between components makes refactoring harder later",
+    "Single point of failure (mitigated by local redundancy or simple failover)"
+  ],
+  "risk": "High risk of performance degradation if the single service grows too large without proper modularization; potential data consistency issues if state management is not carefully designed.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "Single-service prototype",
+  "reasoning": "For a small team on constrained hardware, a monolithic single-service approach minimizes deployment complexity, reduces operational overhead, and allows rapid iteration. Distributed systems introduce significant latency, synchronization challenges, and infrastructure costs that are unnecessary at this stage.",
+  "tradeoffs": [
+    "Reduced scalability compared to distributed systems",
+    "Tight coupling between components makes refactoring harder later",
+    "Single point of failure if the service crashes"
+  ],
+  "risk": "High risk of technical debt if the team prematurely attempts to split services before validating core functionality",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: No
+{
+  "summary": "A C# utility class named RetryPolicy that implements asynchronous retry logic with exponential backoff, maximum attempt limits, and CancellationToken support without external dependencies.",
+  "code": "using System;\nusing System.Threading;\nusing System.Threading.Tasks;\n\nnamespace Utilities\n{\n    public class RetryPolicy\n    {\n        private readonly int _maxAttempts;\n        private readonly TimeSpan _initialDelay;\n        private readonly Func<Exception, int, TimeSpan> _backoffCalculator;\n\n        public RetryPolicy(int maxAttempts, TimeSpan initialDelay, Func<Exception, int, TimeSpan> backoffCalculator)\n        {\n            _maxAttempts = maxAttempts;\n            _initialDelay = initialDelay;\n            _backoffCalculator = backoffCalculator;\n        }\n\n        public async Task<T> ExecuteAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken = default)\n        {\n            for (int attempt = 1; attempt <= _maxAttempts; attempt++)\n            {\n                try\n                {\n                    return await operation(cancellationToken).ConfigureAwait(false);\n                }\n                catch (OperationCanceledException)\n                {\n                    throw;\n                }\n                catch (Exception ex)\n                {\n                    if (attempt >= _maxAttempts)\n                    {\n                        throw;\n                    }\n\n                    var delay = _backoffCalculator(ex, attempt);\n                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);\n                }\n            }\n\n            throw new InvalidOperationException(\"Retry limit exceeded.\");\n        }\n    }\n\n    public static class RetryPolicyExtensions\n    {\n        public static async Task<T> ExecuteAsync<T>(this RetryPolicy policy, Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken = default)\n        {\n            return await policy.ExecuteAsync(operation, cancellationToken).ConfigureAwait(false);\n        }\n    }\n}",
+  "notes": [
+    "The RetryPolicy class uses a loop to attempt the operation up to _maxAttempts times.",
+    "On failure, it calculates a delay using the provided backoff calculator function.",
+    "Exponential backoff is achieved by the caller providing a function like (ex, attempt) => TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)).",
+    "OperationCanceledException is handled separately to allow cancellation without retrying.",
+    "The ExecuteAsync method is generic to support
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: No
+{
+  "summary": "A C# utility class named RetryPolicy that implements asynchronous retry logic with configurable maximum attempts, exponential backoff, and CancellationToken support without external dependencies.",
+  "code": "using System;\nusing System.Threading;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task<T> ExecuteAsync<T>(Func<Task<T>> operation, int maxAttempts, TimeSpan baseDelay, CancellationToken cancellationToken = default)\n    {\n        var delay = baseDelay;\n        var attempt = 0;\n\n        while (attempt < maxAttempts)\n        {\n            try\n            {\n                return await operation().ConfigureAwait(false);\n            }\n            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)\n            {\n                throw;\n            }\n            catch (Exception ex)\n            {\n                attempt++;\n                if (attempt >= maxAttempts)\n                {\n                    throw;\n                }\n\n                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);\n                delay *= 2; // Exponential backoff\n            }\n        }\n\n        throw new InvalidOperationException(\"Retry limit exceeded.\");\n    }\n}",
+  "notes": [\n    "Uses Task.Delay with CancellationToken for cancellation support.",\n    "Implements exponential backoff by doubling the delay after each failure.",\n    "Catches OperationCanceledException specifically to re-throw if the token is cancelled.",\n    "Returns the result on success or throws the last exception if the limit is reached.",\n    "No external NuGet packages required."
+  ],
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: No
+{
+  "summary": "A C# utility class named RetryPolicy that implements asynchronous retry logic with configurable maximum attempts, CancellationToken support, and exponential backoff without external dependencies.",
+  "code": "using System;\nusing System.Threading;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task<T> ExecuteAsync<T>(Func<Task<T>> operation, int maxAttempts, TimeSpan baseDelay, CancellationToken cancellationToken = default)\n    {\n        var delay = baseDelay;\n        var attempt = 0;\n\n        while (attempt < maxAttempts)\n        {\n            try\n            {\n                return await operation();\n            }\n            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)\n            {\n                throw;\n            }\n            catch (Exception ex)\n            {\n                attempt++;\n\n                if (attempt >= maxAttempts)\n                {\n                    throw;\n                }\n\n                cancellationToken.ThrowIfCancellationRequested();\n                await Task.Delay(delay, cancellationToken);\n                delay *= 2; // Exponential backoff\n            }\n        }\n\n        throw new InvalidOperationException(\"Retry limit exceeded.\");\n    }\n}",
+  "notes": [\n    "The ExecuteAsync method is a static extension method for easy usage.\n    "Exponential backoff doubles the delay after each failed attempt.\n    "OperationCanceledException is specifically handled to allow cancellation without retrying.\n    "The base delay is in TimeSpan format.\n    "No external NuGet packages are required.",
+    "Usage example: await RetryPolicy.ExecuteAsync(() => DoWorkAsync(), 3, TimeSpan.FromSeconds(1));"
+  ],
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+  "likely_bug": "The method does not handle null input, causing a NullReferenceException when items is null.",
+  "minimal_change": "Add a null check at the beginning of the method to return 0 if items is null.",
+  "patch": "diff --git a/CountItems.cs b/CountItems.cs\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1 +1,3 @@\n public static int CountItems(IEnumerable<string> items) {\n+    if (items == null) {\n+        return 0;\n+    }\n   return items.Count();\n }",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+  "likely_bug": "The method does not handle null input, causing a NullReferenceException when items is null.",
+  "minimal_change": "Add a null check at the beginning of the method to return 0 if items is null.",
+  "patch": "diff --git a/CountItems.cs b/CountItems.cs\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1,4 +1,6 @@\n public static int CountItems(IEnumerable<string> items) {\n+    if (items == null) {\n+        return 0;\n+    }\n     return items.Count();\n }",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+  "likely_bug": "The method does not handle null input, causing a NullReferenceException when items is null.",
+  "minimal_change": "Add a null check at the beginning of the method to return 0 if items is null.",
+  "patch": "diff --git a/CountItems.cs b/CountItems.cs\nindex 1234567..abcdefg 100644\n--- a/CountItems.cs\n+++ b/CountItems.cs\n@@ -1,4 +1,5 @@\n public static int CountItems(IEnumerable<string> items) {\n+    if (items == null) return 0;\n     return items.Count();\n }",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{
+  "likely_cause": "The renamed class reference in the codebase is not updated to the new name, causing a compilation error.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": {
+    "query": "OldClassName"
+  },
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "All occurrences of the old class name are identified and verified against the new class name, or the build succeeds.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": "The build fails because references to the old class name exist in the codebase, but the class has been renamed to a new identifier.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": {
+    "query": "old_class_name"
+  },
+  "followup_tools": [
+    "search_files",
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "All occurrences of the old class name are identified and verified against the new class name, or the search yields no results indicating the class was removed.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": "The build fails because references to the old class name exist in the codebase, but the class has been renamed to a new name.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": {
+    "query": "old_class_name"
+  },
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "All occurrences of the old class name are identified and verified against the new class name, or the search returns no results indicating the class name was not used.",
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B under identical context length and output token limits found that while Model B is faster (2.8s vs 4.2s), Model A is more reliable for structured output tasks. Model A produced valid JSON but occasionally made unsupported factual claims, whereas Model B failed to adhere to the requested schema twice.",
+  "key_findings": [
+    "Model A response time: 4.2 seconds (warm run).",
+    "Model B response time: 2.8 seconds.",
+    "Model A successfully generated valid JSON for structured-output tasks.",
+    "Model A occasionally generated unsupported factual claims.",
+    "Model B failed to follow the requested schema twice.",
+    "Both models were tested with identical context length and output token limits."
+  ],
+  "recommendation": "Prioritize Model A for tasks requiring reliable structured output (valid JSON), as the benchmark explicitly favors reliability and schema adherence over raw speed. Model B's speed advantage is outweighed by its inconsistency in following output schemas.",
+  "caveats": [
+    "Model A's performance includes unsupported factual claims, indicating potential hallucination risks despite valid JSON formatting.",
+    "Model B's schema failures suggest a need for improved instruction following or post-processing.",
+    "Results are based on a single warm run for Model A; further testing is recommended to confirm consistency.",
+    "The benchmark prioritizes reliability over speed, which may not align with all use cases where latency is critical."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B under identical context length and output token limits found that while Model B is faster (2.8s vs 4.2s), Model A is more reliable in adhering to structured output requirements. However, Model A occasionally made unsupported factual claims.",
+  "key_findings": [
+    "Model A response time: 4.2 seconds (warm run).",
+    "Model B response time: 2.8 seconds.",
+    "Model A successfully produced valid JSON for structured-output tasks.",
+    "Model B failed to follow the requested schema twice.",
+    "Model A generated some unsupported factual claims.",
+    "Both models were tested with identical constraints (context length and output token limit)."
+  ],
+  "recommendation": "Prioritize Model A for tasks requiring high reliability and strict adherence to structured output formats, despite its slower response time, as the benchmark explicitly favors reliability and schema compliance over raw speed.",
+  "caveats": [
+    "Model A's performance includes unsupported factual claims, indicating potential hallucination risks.",
+    "Model B's schema failures suggest it may be less suitable for automated parsing or strict API integrations.",
+    "The comparison was limited to a single warm run for Model A.",
+    "The benchmark explicitly prioritizes reliability and structured output over speed, which may not align with all use cases where latency is critical."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+  "summary": "A benchmark comparing Model A and Model B under identical context length and output token limits found that while Model B is faster (2.8s vs 4.2s), Model A is more reliable in adhering to structured output requirements, despite occasionally making unsupported factual claims.",
+  "key_findings": [
+    "Model A response time: 4.2 seconds (warm run).",
+    "Model B response time: 2.8 seconds.",
+    "Model A successfully produced valid JSON for structured-output tasks.",
+    "Model B failed to follow the requested schema twice.",
+    "Model A occasionally generated unsupported factual claims.",
+    "Both models were tested with identical constraints (context length and output token limit)."
+  ],
+  "recommendation": "Prioritize Model A for tasks requiring reliable structured output, as the benchmark explicitly values reliability and schema adherence over raw speed.",
+  "caveats": [
+    "Model A's factual accuracy is not fully verified; it made unsupported claims.",
+    "Model B's performance on structured tasks is inconsistent.",
+    "Results are based on a single warm run for Model A.",
+    "The benchmark prioritizes reliability over speed, which may not align with all use cases."
+  ]
+}
+--------------------------------------------------
