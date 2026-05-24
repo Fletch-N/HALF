@@ -158,13 +158,19 @@ Use one row per model/configuration after completing the prompt suite.
 | Model | Quant | Params | Avg latency (ms) | Avg tok/s | Peak RAM (GB) | Peak VRAM (GB)  | Overall rank |
 | :---- | :---- | :----- | ---------------: | --------: | ------------: | -------------:  | -----------: |
 | qwen3.5:2b | TBD | TBD | 4,818 | 64.85 | n/a | n/a | 1 |
-| qwen3.5:4b | Q4_K_M | 4.66B | 10,950 | 23.16 | n/a | n/a | 2 |
+| nemotron-3-nano:4b | TBD | 4B | 4,207 | 55.25 | n/a | n/a | 2 |
+| deepseek-r1:1.5b | TBD | 1.5B | 9,434 | 59.13 | n/a | n/a | 3 |
+| granite4.1:3b | TBD | 3B | 9,581 | 48.07 | n/a | n/a | 4 |
+| qwen3.5:4b | Q4_K_M | 4.66B | 10,950 | 23.16 | n/a | n/a | 5 |
+| gemma4:e2b | TBD | TBD | 11,680 | 25.72 | n/a | n/a | 6 |
 | Phi-4-mini-instruct | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
 | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
 
 Current artifact set captures latency, token counts, throughput, success, and a single `ollama ps` snapshot. It does not include per-run peak RAM or VRAM measurements, so those cells remain `n/a` until resource telemetry is added to the benchmark script.
 
 ## Detailed Runs
+
+Full log files can be found in `docs/benchmarks/$model-$size-*`
 
 ### Model: Qwen 3.5:4B
 #### Configuration
@@ -251,3 +257,175 @@ Warmup summary: P00 ran 3 times before the measured suite, averaging 9,307 ms to
 | Formatting discipline | Better than the 4B runs. 14 of 15 measured runs produced valid JSON; the only schema failure was the third P02 code-generation run. |
 | Tool-use potential | Moderate. P04 responses were usable and usually valid JSON, but they sometimes selected weaker first steps such as starting with `search_symbols` and using generic argument placeholders instead of the most deterministic repo-inspection path. |
 | Failure modes | Primary failure mode is occasional degradation on longer code-generation outputs, where the model can still produce malformed JSON or broken code. Secondary issues are generic planning advice and code samples that compile only after manual correction. |
+
+### Model: Nemotron 3 Nano 4B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | nemotron-3-nano:4b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 5.2 GB reported by `ollama ps`; processor split reported as 100% GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 10,611 ms total latency and 56.74 tok/s. The first warmup incurred a cold-load penalty of 29,968 ms total, while warmup runs 2 and 3 completed in 967 ms and 898 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 220 | 94 | 2,503 | 2,959 | 104 | 141 | 56.33 | n/a | n/a | Yes | Valid JSON |
+| 2 | P01 | 229 | 94 | 2,255 | 2,706 | 104 | 126 | 55.89 | n/a | n/a | Yes | Valid JSON |
+| 3 | P01 | 211 | 91 | 2,769 | 3,201 | 104 | 154 | 55.61 | n/a | n/a | Yes | Valid JSON |
+| 1 | P02 | 201 | 88 | 8,807 | 9,377 | 99 | 489 | 55.52 | n/a | n/a | Yes | Valid JSON |
+| 2 | P02 | 211 | 91 | 7,660 | 8,221 | 99 | 423 | 55.22 | n/a | n/a | Yes | Valid JSON |
+| 3 | P02 | 202 | 88 | 8,960 | 9,547 | 99 | 490 | 54.69 | n/a | n/a | Yes | Valid JSON |
+| 1 | P03 | 211 | 93 | 1,513 | 1,928 | 105 | 84 | 55.53 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 207 | 92 | 1,521 | 1,916 | 105 | 84 | 55.24 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 204 | 92 | 1,499 | 1,901 | 105 | 83 | 55.36 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 206 | 131 | 2,069 | 2,525 | 136 | 114 | 55.11 | n/a | n/a | Yes | Valid JSON |
+| 2 | P04 | 208 | 128 | 1,976 | 2,427 | 136 | 109 | 55.18 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 256 | 130 | 1,967 | 2,475 | 136 | 107 | 54.39 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 237 | 130 | 4,077 | 4,615 | 139 | 224 | 54.94 | n/a | n/a | Yes | Valid JSON |
+| 2 | P05 | 206 | 130 | 4,266 | 4,775 | 139 | 234 | 54.86 | n/a | n/a | Yes | Valid JSON |
+| 3 | P05 | 212 | 136 | 4,004 | 4,538 | 139 | 220 | 54.95 | n/a | n/a | Yes | Valid JSON |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Strong overall. All 15 measured runs returned valid JSON and stayed aligned with the requested task shape. P01, P03, and P05 were especially consistent and concise across runs. |
+| Code quality | Moderate. P03 outputs were consistently minimal and correct. P02 responses were structurally strong, but the generated retry helpers still had important implementation defects such as not awaiting async operations in some runs, invalid `TimeSpan` math, disposing a `CancellationToken`, and inconsistent use of `Task` versus `ValueTask`. |
+| Hallucination risk | Low to moderate in this prompt set. The model stayed grounded to the prompt and avoided obvious package hallucinations, but it still presented flawed code and generic architectural claims with high confidence. |
+| Formatting discipline | Excellent. All 15 measured runs produced valid JSON, and the model maintained stable schema compliance even on longer code-generation outputs. |
+| Tool-use potential | Moderate. P04 responses were valid and coherent, but the plans were generic and sometimes chose weaker first steps such as broad symbol search for a rename issue instead of a more deterministic inspection path. |
+| Failure modes | Primary failure mode is semantic correctness inside otherwise clean output. The model is fast and structurally reliable, but code-generation results still require review for compile-time and API-level correctness. |
+
+### Model: DeepSeek-R1 1.5B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | deepseek-r1:1.5b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 1.4 GB reported by `ollama ps`; processor split reported as 100% GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 13,394 ms total latency and 59.64 tok/s. The first warmup incurred a cold-load penalty of 36,566 ms total, while warmup runs 2 and 3 completed in 1,798 ms and 1,818 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 169 | 38 | 1,425 | 6,024 | 92 | 89 | 62.47 | n/a | n/a | Yes | Valid JSON |
+| 2 | P01 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | n/a | n/a | No | Invalid JSON response |
+| 3 | P01 | 149 | 11 | 996 | 4,163 | 92 | 61 | 61.21 | n/a | n/a | Yes | Valid JSON |
+| 1 | P02 | 189 | 29 | 8,151 | 32,366 | 87 | 512 | 62.81 | n/a | n/a | No | Invalid JSON response |
+| 2 | P02 | 151 | 12 | 7,705 | 33,447 | 87 | 512 | 66.45 | n/a | n/a | No | Invalid JSON response |
+| 3 | P02 | 150 | 12 | 1,395 | 6,796 | 87 | 104 | 74.58 | n/a | n/a | Yes | Valid JSON |
+| 1 | P03 | 147 | 40 | 955 | 3,949 | 92 | 60 | 62.84 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 150 | 11 | 1,623 | 7,251 | 92 | 113 | 69.62 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 168 | 11 | 1,400 | 6,634 | 92 | 102 | 72.84 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 145 | 50 | 1,440 | 5,751 | 117 | 89 | 61.80 | n/a | n/a | Yes | Valid JSON |
+| 2 | P04 | 150 | 11 | 1,371 | 5,232 | 117 | 83 | 60.53 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 151 | 12 | 1,549 | 5,652 | 117 | 90 | 58.11 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 149 | 39 | 2,373 | 8,619 | 127 | 135 | 56.89 | n/a | n/a | Yes | Valid JSON |
+| 2 | P05 | 152 | 12 | 2,169 | 7,940 | 127 | 125 | 57.63 | n/a | n/a | Yes | Valid JSON |
+| 3 | P05 | 160 | 11 | 2,031 | 7,684 | 127 | 120 | 59.08 | n/a | n/a | Yes | Valid JSON |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Uneven. P03, P04, and P05 succeeded in all three measured runs, but P01 had one malformed response and P02 only succeeded once out of three runs. When the model stayed within the schema, it generally remained on-task and concise. |
+| Code quality | Weak for generation and inconsistent for editing. P02 frequently produced unusable output, including non-C# syntax, nested JSON instead of code, and malformed or truncated payloads. P03 responses were valid JSON but still questionable on substance, with runs that claimed the original code already handled null input or suggested non-existent APIs such as `CountOrDefault`. |
+| Hallucination risk | Moderate. The model stayed close to the benchmark prompts, but it confidently introduced unsupported APIs, confused language constructs, and generic assumptions in planning responses. |
+| Formatting discipline | Mixed. 11 of 15 measured runs produced valid JSON, but failures were severe when they happened: one P01 run collapsed into truncated output, and two P02 runs produced invalid schema payloads despite long completions. |
+| Tool-use potential | Limited to moderate. P04 outputs were valid JSON and roughly followed the requested shape, but they were generic, often named the wrong first tool, and did not show strong repo-aware troubleshooting. |
+| Failure modes | Primary failure modes are schema breakdown and low-quality code-centric reasoning. The model can be very fast on successful runs, but it is less reliable on structured reasoning and code generation than the stronger alternatives in this benchmark set. |
+
+### Model: Granite 4.1 3B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | granite4.1:3b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 2.7 GB reported by `ollama ps`; processor split reported as 100% GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 6,223 ms total latency and 50.02 tok/s. The first warmup incurred a cold-load penalty of 15,458 ms total, while warmup runs 2 and 3 completed in 1,617 ms and 1,594 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 106 | 1,051 | 4,264 | 12,403 | 98 | 196 | 45.97 | n/a | n/a | Yes | Valid JSON |
+| 2 | P01 | 107 | 14 | 4,337 | 11,589 | 98 | 202 | 46.58 | n/a | n/a | Yes | Valid JSON |
+| 3 | P01 | 107 | 20 | 3,599 | 10,433 | 98 | 176 | 48.90 | n/a | n/a | Yes | Valid JSON |
+| 1 | P02 | 111 | 76 | 6,075 | 16,583 | 93 | 289 | 47.57 | n/a | n/a | Yes | Valid JSON |
+| 2 | P02 | 132 | 20 | 6,084 | 17,058 | 93 | 296 | 48.66 | n/a | n/a | Yes | Valid JSON |
+| 3 | P02 | 107 | 17 | 6,206 | 16,753 | 93 | 293 | 47.21 | n/a | n/a | Yes | Valid JSON |
+| 1 | P03 | 113 | 81 | 710 | 2,281 | 98 | 37 | 52.12 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 111 | 17 | 1,381 | 3,906 | 98 | 68 | 49.24 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 105 | 19 | 1,362 | 4,280 | 98 | 72 | 52.85 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 108 | 102 | 2,070 | 5,686 | 123 | 97 | 46.85 | n/a | n/a | Yes | Valid JSON |
+| 2 | P04 | 109 | 18 | 1,966 | 5,592 | 123 | 97 | 49.35 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 107 | 18 | 2,175 | 5,770 | 123 | 100 | 45.98 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 100 | 96 | 3,965 | 10,644 | 133 | 184 | 46.41 | n/a | n/a | Yes | Valid JSON |
+| 2 | P05 | 125 | 19 | 4,033 | 10,750 | 133 | 185 | 45.87 | n/a | n/a | Yes | Valid JSON |
+| 3 | P05 | 103 | 19 | 3,664 | 9,986 | 133 | 174 | 47.49 | n/a | n/a | Yes | Valid JSON |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Strong overall. All 15 measured runs returned valid JSON and stayed aligned with the requested task shape. P01, P04, and P05 were consistently on-spec, while P02 and P03 completed successfully but still needed substance review. |
+| Code quality | Mixed. P02 outputs were well-formed and directionally correct, but the generated retry helpers still had implementation issues such as returning a value from a non-generic `Task` method, missing `System.Threading` imports for `CancellationToken`, using `Thread.Sleep` inside async flow, and not actually implementing exponential backoff. P03 improved on runs 2 and 3, but run 1 produced a broken patch that removed logic instead of fixing the null case. |
+| Hallucination risk | Low to moderate in this prompt set. The model stayed anchored to the benchmark prompts and avoided wild factual invention, but it still produced questionable API usage and overconfident explanations for flawed code. |
+| Formatting discipline | Excellent. All 15 measured runs produced valid JSON, making Granite 4.1 3B the most structurally reliable model in this benchmark set so far. |
+| Tool-use potential | Moderate. P04 consistently selected a sensible search-first workflow and returned a usable schema, but the plans remained generic and did not exploit repo-specific evidence or the full tool budget. |
+| Failure modes | Primary failure mode is semantic quality rather than schema compliance: answers are usually well-formed and fast, but code-oriented tasks can still contain compile or logic defects that require human review. |
+
+### Model: Gemma4:E2B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | gemma4:e2b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 7.8 GB reported by `ollama ps`; processor split reported as 74%/26% CPU/GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 16,639 ms total latency and 25.04 tok/s. The first warmup incurred a cold-load penalty of 45,696 ms total, while warmup runs 2 and 3 completed in 2,183 ms and 2,037 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 446 | 92 | 12,446 | 13,603 | 100 | 325 | 26.11 | n/a | n/a | Yes | Valid JSON |
+| 2 | P01 | 435 | 44 | 12,846 | 13,991 | 100 | 339 | 26.39 | n/a | n/a | Yes | Valid JSON |
+| 3 | P01 | 396 | 41 | 12,646 | 13,743 | 100 | 325 | 25.70 | n/a | n/a | Yes | Valid JSON |
+| 1 | P02 | 410 | 91 | 20,396 | 21,669 | 96 | 512 | 25.10 | n/a | n/a | No | Invalid JSON response |
+| 2 | P02 | 383 | 43 | 20,352 | 21,540 | 96 | 512 | 25.16 | n/a | n/a | No | Invalid JSON response |
+| 3 | P02 | 391 | 40 | 20,454 | 21,624 | 96 | 512 | 25.03 | n/a | n/a | No | Invalid JSON response |
+| 1 | P03 | 394 | 89 | 5,246 | 6,292 | 104 | 133 | 25.35 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 404 | 43 | 5,254 | 6,261 | 104 | 133 | 25.31 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 438 | 42 | 4,625 | 5,556 | 104 | 119 | 25.73 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 390 | 113 | 4,132 | 5,077 | 141 | 108 | 26.14 | n/a | n/a | Yes | Valid JSON |
+| 2 | P04 | 410 | 43 | 4,105 | 5,017 | 141 | 109 | 26.55 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 404 | 45 | 4,285 | 5,178 | 141 | 109 | 25.44 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 428 | 107 | 10,928 | 12,095 | 131 | 282 | 25.81 | n/a | n/a | Yes | Valid JSON |
+| 2 | P05 | 388 | 45 | 10,468 | 11,508 | 131 | 273 | 26.08 | n/a | n/a | Yes | Valid JSON |
+| 3 | P05 | 384 | 42 | 11,020 | 12,049 | 131 | 286 | 25.95 | n/a | n/a | Yes | Valid JSON |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Strong on P01, P03, P04, and P05 across all three measured runs each: the model stayed on-task and returned the requested JSON shape. P02 was the consistent exception, with all three code-generation runs failing the valid-JSON requirement even though the high-level answer intent matched the prompt. |
+| Code quality | Mixed. P03 edits were minimal and correct in all runs. P02 outputs showed the right retry/backoff structure, but the responses had design issues and malformed payloads, including incomplete code strings and invalid exception construction, so the generated code would still need manual repair. |
+| Hallucination risk | Low to moderate in this prompt set. Outputs stayed anchored to the prompt and did not invent package facts, but P04 sometimes fell back to generic placeholder arguments instead of producing a more repo-specific diagnostic path. |
+| Formatting discipline | Good overall except for code generation. 12 of 15 measured runs produced valid JSON; all three P02 runs failed schema validity because of malformed JSON in the response payload. |
+| Tool-use potential | Moderate to good. P04 consistently chose deterministic search-first workflows and sensible stop conditions, which aligns with the task, but the plans were generic and underused the available tool budget. |
+| Failure modes | Primary failure mode is malformed structured output on longer code-heavy responses, especially when emitting large code strings. Secondary issues are generic placeholder values in planning tasks and generated-code defects even when the high-level approach is reasonable. |

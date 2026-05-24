@@ -1,0 +1,2 @@
+NAME                ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+deepseek-r1:1.5b    e0979632db5a    1.4 GB    100% GPU     4096       4 minutes from now

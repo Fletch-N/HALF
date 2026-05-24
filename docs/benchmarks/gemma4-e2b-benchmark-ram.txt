@@ -1,0 +1,2 @@
+NAME          ID              SIZE      PROCESSOR          CONTEXT    UNTIL
+gemma4:e2b    7fbdbf8f5e45    7.8 GB    74%/26% CPU/GPU    4096       4 minutes from now

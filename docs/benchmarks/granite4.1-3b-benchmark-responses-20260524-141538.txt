@@ -1,0 +1,182 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.9
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.9
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 0.9
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "start as a simple single-service prototype",
+  "reasoning": "A single-service approach keeps the initial implementation minimal and focused on core functionality, reducing complexity and development time suitable for constrained hardware.",
+  "tradeoffs": {
+    "speed_of_development": "Faster to develop and deploy initially, allowing quicker feedback from users.",
+    "scalability": "Less scalable in terms of distributed capabilities but can be extended later if needed.",
+    "maintainability": "Easier to maintain with fewer inter-service dependencies."
+  },
+  "risk": {
+    "overengineering": "Risk of overengineering is lower as the initial scope is limited.",
+    "performance_limitations": "Potential performance limitations due to all functionality being in one service, but can be mitigated with optimization."
+  },
+  "confidence": "High confidence in proceeding with a single-service prototype given the constraints and need for rapid iteration on a local development assistant."
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: Yes
+{
+  "decision": "start as a simple single-service prototype",
+  "reasoning": "A single-service approach keeps the initial implementation minimal and focused on core functionality, reducing complexity and development time suitable for constrained hardware.",
+  "tradeoffs": {
+    "speed_of_development": "Faster to develop and deploy initially, allowing quicker feedback from users.",
+    "scalability": "May limit scalability as the application grows, requiring future refactoring into a multi-service architecture if needed."
+  },
+  "risk": {
+    "overengineering": "Risk of overengineering due to premature scaling considerations; however, this can be mitigated by strict adherence to MVP (Minimum Viable Product) principles.",
+    "performance_on_constrained_hardware": "Potential performance issues on constrained hardware if the service becomes too complex later."
+  },
+  "confidence": "High confidence in proceeding with a single-service prototype due to the emphasis on observability, safety, and usefulness while avoiding unnecessary complexity initially."
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "start as a simple single-service prototype",
+  "reasoning": "A single-service approach keeps the initial implementation straightforward and focused on core functionality, reducing complexity and development time on constrained hardware.",
+  "tradeoffs": {
+    "speed_of_development": "Faster to develop and deploy initially, allowing quicker feedback from users.",
+    "scalability": "Less scalable for future expansion without additional architectural changes.",
+    "modularity": "Lower modularity may make it harder to integrate new features later."
+  },
+  "risk": {
+    "overengineering": "Risk of overengineering if the design is expanded beyond its current scope.",
+    "performance": "Potential performance issues on constrained hardware due to a monolithic design."
+  },
+  "confidence": "High, given the constraints and need for rapid iteration in early development phases."
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: Yes
+{
+  "summary": "A simple RetryPolicy utility class for retrying asynchronous operations with exponential backoff and support for CancellationToken without using external packages.",
+  "code": "using System;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task ExecuteAsync<T>(\n        Func<Task<T>> operation, int maxAttempts, TimeSpan? backoff = null,\n        CancellationToken cancellationToken = default)\n    {\n        for (int attempt = 0; attempt < maxAttempts; attempt++)\n        {\n            try\n            {\n                return await operation();\n            }\n            catch (Exception ex) when ((attempt + 1 == maxAttempts) || cancellationToken.IsCancellationRequested)\n            {\n                if (backoff.HasValue)\n                    await Task.Delay(backoff.Value, cancellationToken);\n                else\n                    Thread.Sleep(100); // default short delay\n            }\n        }\n    }\n}",
+  "notes": "The RetryPolicy class wraps an asynchronous operation and retries it up to a specified maximum number of attempts. It uses exponential backoff by default but allows custom backoff durations via the `backoff` parameter. The CancellationToken is checked after each failed attempt to allow cancellation of ongoing operations. If no backoff duration is provided, a default short delay (100ms) is used.",
+  "confidence": "high"
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: Yes
+{
+  "summary": "A simple RetryPolicy utility class for retrying asynchronous operations with exponential backoff and support for CancellationToken without using external packages.",
+  "code": "using System;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task ExecuteWithRetryAsync<T>(\n        Func<Task<T>> operation, int maxAttempts, TimeSpan? retryInterval = null,\n        CancellationToken cancellationToken = default)\n    {\n        if (maxAttempts <= 0) throw new ArgumentException(\"Max attempts must be greater than zero.\");\n\n        for (int attempt = 1; attempt <= maxAttempts; attempt++)\n        {\n            try\n            {\n                return await operation();\n            }\n            catch (Exception ex)\n            {\n                if (attempt == maxAttempts || cancellationToken.IsCancellationRequested)\n                    throw;\n\n                await Task.Delay((retryInterval ?? TimeSpan.Zero).Duration(), cancellationToken);\n            }\n        }\n    }\n}\n",
+  "notes": "The RetryPolicy class uses a simple loop to attempt the operation up to `maxAttempts`. If an exception occurs and there are more attempts left, it waits for the specified `retryInterval` (default is zero, meaning no delay initially) before retrying. The CancellationToken allows you to cancel the retry process early if needed.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: Yes
+{
+  "summary": "A simple RetryPolicy utility class for retrying asynchronous operations with exponential backoff and support for CancellationToken without using external packages.",
+  "code": "using System;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task ExecuteWithRetryAsync<T>(\n        Func<Task<T>> operation, int maxAttempts, TimeSpan? retryInterval = null,\n        CancellationToken cancellationToken = default)\n    {\n        if (maxAttempts <= 0) throw new ArgumentException(\"Max attempts must be greater than zero.\");\n\n        for (int attempt = 1; attempt <= maxAttempts; attempt++)\n        {\n            try\n            {\n                return await operation();\n            }\n            catch (Exception ex)\n            {\n                if (attempt == maxAttempts || cancellationToken.IsCancellationRequested)\n                    throw;\n\n                await Task.Delay((retryInterval ?? TimeSpan.Zero).Duration(), cancellationToken);\n            }\n        }\n    }\n}\n",
+  "notes": "The RetryPolicy class uses a simple exponential backoff strategy where the delay between retries is based on the retry interval provided. If no interval is specified, it defaults to zero (no delay), allowing the caller to specify the desired interval using TimeSpan. The CancellationToken allows for aborting the retry process early if needed.",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{"likely_bug": true, "minimal_change": false, "patch": "- if (items == null) return 0;\n+", "confidence": 0.9}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{"likely_bug": "NullReferenceException when items is null", "minimal_change": "Add null check before calling Count()", "patch": "- return items.Count();\n+ if (items == null) {\n+     return 0;\n+ }\n+ return items.Count();", "confidence": "90%"}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{"likely_bug": "NullReferenceException when items is null", "minimal_change": "Add null check before calling Count()", "patch": "- return items.Count();\\n+ if (items == null) {\\n+     return 0;\\n+ }\\n+ return items.Count();", "confidence": 0.95}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{
+  "likely_cause": "The build failure is likely due to unresolved references caused by the class name change.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": ["renamed_class_name"],
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "If no references are found for the renamed class, stop further investigation.",
+  "confidence": 0.75
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": "The build failure is likely due to unresolved references caused by the class name change.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": ["renamed_class_name"],
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "If no references are found for the renamed class, stop further investigation.",
+  "confidence": 0.75
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": "The build failure is likely due to unresolved references caused by the class name change.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": ["renamed_class_name"],
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols"
+  ],
+  "stop_condition": "If search_files returns no occurrences, stop as there are no references to investigate further.",
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+  "summary": "Model A completed tasks faster than Model B but had issues with unsupported factual claims and occasional schema violations. Both models were evaluated under identical conditions.",
+  "key_findings": [
+    "Model A: 4.2 seconds response time on warm run, produced valid JSON for structured outputs, but made unsupported factual claims occasionally.",
+    "Model B: 2.8 seconds response time, failed to follow requested schema twice despite same context length and output token limit as Model A."
+  ],
+  "recommendation": "Prioritize reliability and adherence to schema requirements over raw speed when selecting a model for structured-output tasks.",
+  "caveats": [
+    "Both models were tested under the same conditions; differences in performance may be due to inherent characteristics rather than testing environment.",
+    "Model A's faster response time does not compensate for its occasional unsupported factual claims."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+  "summary": "Model A completed tasks faster than Model B but had occasional issues with unsupported factual claims and schema adherence. Both models were evaluated under identical conditions.",
+  "key_findings": [
+    "Model A: 4.2 seconds response time on warm run, produced valid JSON for structured outputs, but made unsupported factual claims occasionally.",
+    "Model B: 2.8 seconds response time, failed to follow requested schema twice despite same context length and output token limit as Model A."
+  ],
+  "recommendation": "Prioritize reliability and structured output over raw speed when selecting a model for critical applications.",
+  "caveats": [
+    "Both models were tested under the same conditions; differences in performance may be due to inherent characteristics rather than testing environment.",
+    "Model B's schema adherence failures could impact application stability if used in systems requiring strict data format compliance."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+  "summary": "Model A completed tasks faster than Model B but had issues with unsupported factual claims and occasional schema violations. Both models were evaluated under identical conditions regarding context length and token limits. The benchmark emphasizes reliability and structured output over speed.",
+  "key_findings": [
+    "Model A: 4.2 seconds response time, valid JSON for structured tasks, occasional unsupported factual claims.",
+    "Model B: 2.8 seconds response time, failed to follow requested schema twice."
+  ],
+  "recommendation": "Prioritize Model A for applications requiring reliable and structured output despite its slower performance and occasional inaccuracies.",
+  "caveats": [
+    "Both models were tested under the same conditions (context length and token limit).",
+    "Model B's faster response time does not compensate for schema adherence issues."
+  ]
+}
+--------------------------------------------------

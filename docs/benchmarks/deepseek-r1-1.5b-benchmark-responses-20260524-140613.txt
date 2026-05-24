@@ -1,0 +1,236 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": "high"
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": "high"
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": "high"
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement and manage, allowing for easier testing and iteration.",
+  "tradeoffs": "The limitation of not being able to scale or integrate with other systems.",
+  "risk": "Potential loss of scalability if the system grows beyond initial expectations.",
+  "confidence": "The risk is manageable given the simplicity of the solution."
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: No
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement and manage, allowing for easier testing and iteration without the complexity of multiple services.",
+  "tradeoffs": "Pros: Simplicity, scalability, ease of maintenance."
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+   
+        
+   
+        
+  
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement and manage, allowing for easier testing and iteration without the complexity of multiple services.",
+  "tradeoffs": "Pros: Simplicity, scalability, ease of maintenance."
+  }
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: No
+{
+  "summary": "This utility class provides a simple and efficient way to implement retries for asynchronous operations in C#. It supports multiple retry strategies including fixed number of attempts, configurable maximum attempts, cancellation on any attempt, and exponential backoff for better performance.",
+  "code": "public class RetryPolicy extends IRetry {\n    private int maxAttempts;\n    private int maxAttemptCount;\n    private double backoffFactor;\n\n    public RetryPolicy(int maxAttempts = 10, int maxAttemptCount = 5, double backoffFactor = 2.0) {\n        this.maxAttempts = maxAttempts;\n        this.maxAttemptCount = maxAttemptCount;\n        this.backoffFactor = backoffFactor;\n    }\n\n    public int Retry(this as self, IRetryable operation) throws Exception {\n        var attempts = 1;\n        while (true) {\n            if (operation retries <= maxAttempts and operation retries < maxAttemptCount) {\n                throw new OperationException(\n                    \"Retries reached maximum allowed attempts\"\n                );\n            }\n\n            // Cancel any ongoing retry\n            if (operation is active) {\n                operation.CancellationToken();\n            } else if (operation is done) {\n                operation.Stop();\n            } else {\n                operation?.CancelRetries();\n            }\n\n            attempts++;\n            if (attempts > maxAttemptCount) {\n                throw new OperationException(\n                    \"Maximum number of retries reached\"\n                );\n            }\n\n            // Apply backoff\n            operation?.SetRetriesBackoffFactor(new Math.Max(backoffFactor, 1.0));\n        }\n    }\n}\n",
+  "notes": "This implementation provides a simple and effective way to handle retries for asynchronous operations in C# using the IRetry interface from Microsoft .NET Framework. It supports multiple retry strategies including fixed number of attempts, configurable maximum attempts, cancellation on any attempt, and exponential backoff for better performance.\n\nThe class includes:\n- Constructor: Initializes maxAttempts, maxAttemptCount, and backoffFactor properties.\n- Retry method: Handles retries by incrementing the attempt count each time. It checks if the operation should be canceled or stopped based on the retry limits. If attempts exceed the maximum allowed, it throws an OperationException with a message indicating too many retries. After reaching the
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: No
+{
+  "summary": "This utility class implements a retry policy for asynchronous operations in C# by supporting multiple retry mechanisms including cancellation, exponential backoff, and fixed intervals. It ensures that operations complete within expected time while handling exceptions gracefully.",
+  "code": {
+    "RetryPolicy": {
+      "cancelOnCancellationToken": {
+        "Description": "Retries an operation if a cancellation token is provided.",
+        "Implementation": {
+          "CancelOperation": {
+            "Parameters": {
+              "operation": "The target operation to retry."
+            },
+            "Options": {
+              "Token": {
+                "Type": "Object",
+                "Value": "null"
+              }
+            },
+            "Return": {
+              "Description": "Retries the operation if cancellation is provided.",
+              "Implementation": {
+                "CancelOperation": {
+                  "Parameters": {
+                    "operation": "The target operation to retry."
+                  },
+                  "Options": {
+                    "Token": {
+                      "Type": "Object",
+                      "Value": "null"
+                    }
+                  },
+                  "Return": {
+                    "Description": "Retries the operation if cancellation is provided.",
+                    "Implementation": {
+                      "CancelOperation": {
+                        "Parameters": {
+                          "operation": "The target operation to retry.",
+                          "cancellationToken": "optional object containing cancellation token."
+                        },
+                        "Options": {
+                          "Token": {
+                            "Type": "Object",
+                            "Value": "null"
+                          }
+                        },
+                        "Return": {
+                          "Description": "Retries the operation if cancellation is provided.",
+                          "Implementation": {
+                            "CancelOperation": {
+                              "Parameters": {
+                                "operation": "The target operation to retry.",
+                                "cancellationToken": null
+                              },
+                              "Options": {
+                                "Token": {
+                                  "Type": "Object",
+                                  "Value": "null"
+                                }
+                              },
+                              "Return": {
+                                "Description": "Retries the operation if cancellation is provided.",
+                                "Implementation": {
+                                  "CancelOperation": {
+                                    "Parameters": {
+                                      "operation": "The target operation to retry.",
+                                      "cancellationToken": null
+                                    },
+                                    "Options": {
+                                      "Token": {
+                                        "Type": "Object",
+                                        "Value": "null"
+                                    }
+                                  },
+                                  "Return": {
+                                    "Description": "Retries the operation if cancellation is provided.",
+                                    "Implementation": {
+                                      "CancelOperation": {
+                                        "Parameters": {
+                                          "operation":
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: Yes
+{
+  "summary": "This utility class implements a retry policy for asynchronous operations in C# by supporting multiple attempts, cancellation via cancellation signals, and handling exceptions gracefully.",
+  "code": {
+    "RetryAttemptLimit": 10,
+    "ExponentialBackoff": 2
+  },
+  "notes": "The implementation uses exponential backoff to reduce the probability of repeated cancellations. Each attempt is retried up to a maximum number of attempts, and cancellation signals are handled gracefully."
+  }
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+  "schema": {
+    "patch": "public static int CountItems(IEnumerable<string> items) { return items.CountOrDefault(0); }",
+    "likely_bug": "The method returns null when input is null, which violates the contract of returning an int."
+  }
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+  "patch": "[\\x00]public static int CountItems(IEnumerable<string> items) { return items.Count(); }",
+  "confidence": "100%",
+  "likely_bug": "The method does not handle null input, which is expected to be a bug.",
+  "minimal_change": "No changes are needed as the code already handles null input gracefully by returning 0.",
+  "patch": "[\\x00]public static int CountItems(IEnumerable<string> items) { return items.Count(); }"
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+  "patch": "[\\x00]public static int CountItems(IEnumerable<string> items) { return items.Count(); }",
+  "confidence": "minimal change",
+  "likely_bug": "The method was modified to handle null input by returning 0.",
+  "minimal_change": "The change is minimal and only modifies the code slightly.",
+  "patch": "[\\x00]public static int CountItems(IEnumerable<string> items) { return items.Count(); }"
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{ "likely_cause": "A class was mistakenly renamed during the project setup phase.", 
+"first_tool_to_call": "inspect_file(path)", 
+"first_tool_arguments": "inspect_file(path).class_name = 'MyClass' vs expected 'MyOtherClass'", 
+"followup_tools": "", 
+"stop_condition": "No further issues were observed after running the build again.", 
+"confidence": "95%" }
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{ "likely_cause": "A class was renamed during the build process, which can cause issues with symbol resolution and other compilation steps.", 
+"first_tool_to_call": "inspect_file", 
+"first_tool_arguments": "inspect_file(path)", 
+"followup_tools": "search_symbols(symbol_name)", 
+"stop_condition": "Symbol not found or unresolved", 
+"confidence": "Medium" }
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{ "likely_cause": "A class was mistakenly renamed during the project setup phase.", 
+"first_tool_to_call": "inspect_file(path)", 
+"first_tool_arguments": "inspect_file(path).class_name = 'MyClass' vs expected 'MyOtherClass'", 
+"followup_tools": "", 
+"stop_condition": "No changes were made to the class name after inspection.", 
+"confidence": "50%" 
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+  "summary": "Model A completed its warm run in 4.2 seconds while generating valid JSON for structured-output tasks. However, it sometimes made unsupported factual claims. Model B finished faster at 2.8 seconds but failed to adhere to the requested schema twice. Both models were tested under identical conditions with the same context length and output token limit. The benchmark emphasizes reliability and structured output over raw speed.",
+  "key_findings": [
+    "Model A completed in 4.2 seconds on a warm run."
+    ],
+  "recommendation": "Invest in Model B for its faster execution time while being cautious of schema adherence issues."
+  }
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+  "summary": "Model A completed tasks in 4.2 seconds on a warm run while producing valid JSON for structured-output tasks. It sometimes made unsupported factual claims. Model B finished in 2.8 seconds but failed to follow the requested schema twice. Both models were tested under identical conditions, with the benchmark emphasizing reliability and structured output over raw speed.",
+  "key_findings": [
+    "Model A completed tasks in 4.2 seconds on a warm run."
+    ],
+  "recommendation": "Prioritize Model A for its reliability and structured output capabilities despite occasional unsupported claims."
+  }
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+  "summary": "Model A completed tasks in 4.2 seconds on a warm run while producing valid JSON for structured-output tasks. It sometimes made unsupported factual claims. Model B finished faster but failed to follow the requested schema twice. Both models were tested under identical conditions, with the benchmark emphasizing reliability and structured output over raw speed.",
+  "key_findings": [
+    "Model A completed tasks in 4.2 seconds on a warm run."
+    ],
+  "recommendation": "Prioritize Model A for its reliability and structured output capabilities despite occasional unsupported claims."
+  }
+--------------------------------------------------

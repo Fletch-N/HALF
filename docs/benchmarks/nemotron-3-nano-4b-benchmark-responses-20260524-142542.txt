@@ -1,0 +1,213 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement, easier to debug, and requires less infrastructure. It aligns with the need for a small team and constrained hardware. Observability and safety can be achieved with lightweight logging and health checks within the service.",
+  "tradeoffs": {
+    "simplicity": "High",
+    "observability": "Moderate (can be added later)",
+    "scalability": "Low (not needed for local dev)",
+    "maintainability": "High"
+  },
+  "risk": "Low",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: Yes
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement, easier to debug, and requires less infrastructure. It reduces operational complexity and risk for a small team on constrained hardware.",
+  "tradeoffs": {
+    "simplicity": "High",
+    "observability": "Moderate (limited to one service)",
+    "scalability": "Low",
+    "maintainability": "High",
+    "resource usage": "Low"
+  },
+  "risk": "Low",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "single-service prototype",
+  "reasoning": "A single-service prototype is simpler to implement, deploy, and observe on constrained hardware. It reduces network overhead, eliminates inter-service communication latency, and allows quick iteration. Observability can be achieved through logs and metrics within the service. Multi-service adds complexity without immediate benefit for a small team.",
+  "tradeoffs": {
+    "simplicity": "High",
+    "observability": "Moderate (logs/metrics within service)",
+    "scalability": "Low (single process)",
+    "maintainability": "Moderate (single codebase)"
+  },
+  "risk": "Low",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: Yes
+{
+  "summary": "A lightweight RetryPolicy class for retrying async operations with exponential backoff, cancellation support, and max attempts.",
+  "code": "public class RetryPolicy : IDisposable\n{\n    private readonly int _maxAttempts;\n    private readonly TimeSpan _initialDelay;\n    private readonly TimeSpan _maxDelay;\n    private readonly TimeSpan _delayMultiplier;\n    private readonly CancellationToken _ct;\n    private int _attempts;\n    private bool _disposed;\n\n    public RetryPolicy(int maxAttempts, TimeSpan initialDelay, TimeSpan maxDelay, TimeSpan delayMultiplier, CancellationToken ct = default)\n    {\n        _maxAttempts = maxAttempts;\n        _initialDelay = initialDelay;\n        _maxDelay = maxDelay;\n        _delayMultiplier = delayMultiplier;\n        _ct = ct;\n        _attempts = 0;\n    }\n\n    public async Task<T> RetryAsync<T>(Func<CancellationToken, Task<T>> operation)\n    {\n        if (_disposed) throw new ObjectDisposedException(nameof(this));\n        if (_maxAttempts <= 0) return operation(_ct);\n\n        while (true)\n        {\n            _attempts++;\n            if (_attempts > _maxAttempts) return operation(_ct);\n\n            try\n            {\n                return operation(_ct);\n            }\n            catch (Exception) when (_attempts < _maxAttempts)\n            {\n                var delay = _initialDelay * Math.Pow(_delayMultiplier, _attempts - 1);\n                if (delay > _maxDelay) delay = _maxDelay;\n\n                if (!_ct.IsCancellationRequested) await Task.Delay(delay, _ct);\n            }\n        }\n    }\n\n    public void Dispose() => _disposed = true;\n}\n",
+  "notes": "Uses built-in C# types only. Exponential backoff calculated as initialDelay * multiplier^(attempt-1). CancellationToken is passed through to operation and delay.",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: Yes
+{
+  "summary": "A lightweight RetryPolicy class for retrying async operations with exponential backoff, cancellation support, and max attempts.",
+  "code": "public class RetryPolicy : IDisposable\n{\n    private readonly int _maxAttempts;\n    private readonly TimeSpan _initialDelay;\n    private readonly TimeSpan _maxDelay;\n    private readonly TimeSpan _delayMultiplier;\n    private readonly CancellationToken _ct;\n    private int _attempts;\n\n    public RetryPolicy(int maxAttempts, TimeSpan initialDelay, TimeSpan maxDelay, TimeSpan delayMultiplier, CancellationToken ct = default)\n    {\n        _maxAttempts = maxAttempts;\n        _initialDelay = initialDelay;\n        _maxDelay = maxDelay;\n        _delayMultiplier = delayMultiplier;\n        _ct = ct;\n    }\n\n    public async Task<T> RetryAsync<T>(Func<Task<T>> operation)\n    {\n        for (int i = 0; i < _maxAttempts; i++)\n        {\n            try\n            {\n                return await operation().ConfigureAwait(false);\n            }\n            catch (Exception) when (i < _maxAttempts - 1)\n            {\n                var delay = _initialDelay * Math.Pow(_delayMultiplier, i);\n                if (delay > _maxDelay) delay = _maxDelay;\n                await Task.Delay(delay, _ct).ConfigureAwait(false);\n            }\n        }\n\n        throw new TimeoutException(\"Operation timed out after all retries.\");\n    }\n\n    public void Dispose() => _ct.Dispose();\n}\n",
+  "notes": "Uses built-in C# types only. Exponential backoff capped by maxDelay. CancellationToken is respected via Task.Delay.",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: Yes
+{
+  "summary": "A lightweight RetryPolicy class for retrying async operations with exponential backoff, cancellation support, and a max attempt limit.",
+  "code": "public class RetryPolicy : IDisposable\n{\n    private readonly int _maxAttempts;\n    private readonly TimeSpan _initialDelay;\n    private readonly TimeSpan _maxDelay;\n    private readonly TimeSpan _delayMultiplier;\n    private readonly CancellationToken _ct;\n    private int _attempts;\n    private bool _disposed;\n\n    public RetryPolicy(int maxAttempts, TimeSpan initialDelay, TimeSpan maxDelay, TimeSpan delayMultiplier, CancellationToken ct = default)\n    {\n        _maxAttempts = maxAttempts;\n        _initialDelay = initialDelay;\n        _maxDelay = maxDelay;\n        _delayMultiplier = delayMultiplier;\n        _ct = ct;\n        _attempts = 0;\n    }\n\n    public async ValueTask<T> RetryAsync<T>(Func<ValueTask<T>> operation, CancellationToken ct = default)\n    {\n        if (_disposed) throw new ObjectDisposedException(nameof(this));\n\n        while (_attempts < _maxAttempts && !_ct.IsCancellationRequested)\n        {\n            _attempts++;\n            try\n            {\n                return await operation().ConfigureAwait(false);\n            }\n            catch (Exception ex) when (!_ct.IsCancellationRequested)\n            {\n                if (_attempts >= _maxAttempts) throw;\n\n                var delay = _initialDelay * Math.Pow(_delayMultiplier, _attempts - 1);\n                if (delay > _maxDelay) delay = _maxDelay;\n\n                await Task.Delay(delay, ct).ConfigureAwait(false);\n            }\n        }\n\n        throw new OperationCanceledException(_ct);\n    }\n\n    public void Dispose() => _disposed = true;\n}\n",
+  "notes": "Uses built-in C# types only. Exponential backoff is capped by maxDelay. CancellationToken is respected throughout.",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+  "likely_bug": "Method throws when input is null because Count() on null reference is invalid.",
+  "minimal_change": "Add null check before calling Count()",
+  "patch": "public static int CountItems(IEnumerable<string> items) { if (items == null) return 0; return items.Count(); }",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+  "likely_bug": "Method throws when input is null because Count() on null reference is invalid.",
+  "minimal_change": "Add null check before calling Count()",
+  "patch": "public static int CountItems(IEnumerable<string> items) { if (items == null) return 0; return items.Count(); }",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+  "likely_bug": "Method throws NullReferenceException when items is null",
+  "minimal_change": "Add null check to return 0 when items is null",
+  "patch": "public static int CountItems(IEnumerable<string> items) { if (items == null) return 0; return items.Count(); }",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{
+  "likely_cause": "A class rename may have broken symbol references or build-time dependencies.",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": "RenamedClass"
+  },
+  "followup_tools": [
+    "search_files",
+    "inspect_file",
+    "run_build"
+  ],
+  "stop_condition": "No references to 'RenamedClass' found in symbols or files",
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": "A class rename may have broken symbol references or build-time dependencies.",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": "class"
+  },
+  "followup_tools": [
+    "search_files",
+    "inspect_file",
+    "run_build"
+  ],
+  "stop_condition": "A build failure is confirmed and the cause is identified.",
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": "A class rename may have broken symbol references or build-time dependencies.",
+  "first_tool_to_call": "search_files",
+  "first_tool_arguments": {
+    "query": "class"
+  },
+  "followup_tools": [
+    "inspect_file",
+    "search_symbols",
+    "run_build"
+  ],
+  "stop_condition": "A build failure is confirmed and the cause is identified.",
+  "confidence": 0.9
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+  "summary": "Model A is faster than Model B in warm runs and produces valid JSON for structured-output tasks, though it occasionally makes unsupported factual claims. Model B is slower and fails to follow the requested schema twice. Both models were tested under identical conditions.",
+  "key_findings": [
+    "Model A has lower response time (4.2s vs 2.8s) but higher reliability in schema adherence.",
+    "Model B is slower and less reliable in schema compliance.",
+    "Structured output is prioritized over raw speed in the benchmark.",
+    "Both models were evaluated with the same context length and output token limit."
+  ],
+  "recommendation": "Model A is recommended for tasks requiring structured output and reliability, despite occasional factual inaccuracies. Model B is not recommended due to schema compliance issues.",
+  "caveats": [
+    "The benchmark does not measure long-term performance or generalization.",
+    "Unsupported factual claims in Model A may affect downstream accuracy.",
+    "Schema failures in Model B may indicate deeper architectural or training issues."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+  "summary": "Model A is faster than Model B on warm runs and produces valid JSON for structured-output tasks, though it occasionally makes unsupported factual claims. Model B is slower and fails to follow the requested schema twice. Both models were tested under identical conditions.",
+  "key_findings": [
+    "Model A has better structured output reliability than Model B.",
+    "Model A is faster than Model B on warm runs.",
+    "Model A occasionally generates unsupported factual claims.",
+    "Model B fails to adhere to the schema twice.",
+    "Both models were evaluated with the same context length and output token limit."
+  ],
+  "recommendation": "Prioritize Model A for structured-output tasks due to its higher reliability and speed, but be cautious of its occasional unsupported factual claims. Model B is not recommended due to schema adherence issues.",
+  "caveats": [
+    "The benchmark does not measure cold-start performance.",
+    "Speed differences may not hold under all conditions.",
+    "Unsupported factual claims in Model A may require verification.",
+    "Schema failures in Model B may indicate deeper architectural issues."
+  ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+  "summary": "Model A is faster than Model B on warm runs and produces valid JSON for structured-output tasks, though it occasionally makes unsupported factual claims. Model B is slower and fails to follow the requested schema twice. Both models were tested under identical conditions.",
+  "key_findings": [
+    "Model A has lower response time (4.2s vs 2.8s) but higher reliability in schema adherence.",
+    "Model B is slower and less reliable in schema compliance.",
+    "Structured output quality is prioritized over raw speed in the benchmark.",
+    "Both models were evaluated with the same context length and output token limit."
+  ],
+  "recommendation": "Model A is recommended for tasks requiring reliable structured output, despite occasional factual inaccuracies. Model B is not recommended due to schema compliance issues.",
+  "caveats": [
+    "Model A's unsupported factual claims may affect downstream processing.",
+    "Benchmark does not measure long-term performance or generalization.",
+    "Speed differences may not reflect real-world usage patterns."
+  ]
+}
+--------------------------------------------------
