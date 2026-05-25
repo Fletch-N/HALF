@@ -1,8 +1,10 @@
 <Solution>
   <Project Name="HALF.Cli" Path="src/HALF.Cli/HALF.Cli.csproj" />
   <Project Name="HALF.Host" Path="src/HALF.Host/HALF.Host.csproj" />
+  <Project Name="HALF.Watch" Path="src/HALF.Watch/HALF.Watch.csproj" />
   <Project Name="HALF.Cli.Tests" Path="tests/HALF.Cli.Tests/HALF.Cli.Tests.csproj" />
   <Project Name="HALF.Host.Tests" Path="tests/HALF.Host.Tests/HALF.Host.Tests.csproj" />
+  <Project Name="HALF.Watch.Tests" Path="tests/HALF.Watch.Tests/HALF.Watch.Tests.csproj" />
 
   <Folder Name="/src/" />
   <Folder Name="/tests/" />

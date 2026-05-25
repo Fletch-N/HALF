@@ -28,6 +28,28 @@ Every model interaction must record and populate the following standardized sche
 |                 | `is_success`            | Boolean status of the completed execution              |
 |                 | `error_category`        | Standardized failure classification string (if failed) |
 
+## Canonical Run Record
+Issue #4 establishes the implementation-facing schema for normal executions in `HALF.Watch`.
+The canonical CLR model is `RunRecord`, composed from small value records so the envelope remains explicit and durable.
+
+| Telemetry Key           | CLR Property Path            |
+| :---------------------- | :--------------------------- |
+| `request_id`            | `Identity.RequestId`         |
+| `runtime_name`          | `Model.RuntimeName`          |
+| `model_name`            | `Model.ModelName`            |
+| `quantization`          | `Model.Quantization`         |
+| `total_latency_ms`      | `Timing.TotalLatencyMs`      |
+| `load_latency_ms`       | `Timing.LoadLatencyMs`       |
+| `prompt_latency_ms`     | `Timing.PromptLatencyMs`     |
+| `generation_latency_ms` | `Timing.GenerationLatencyMs` |
+| `prompt_tokens`         | `Tokens.PromptTokens`        |
+| `completion_tokens`     | `Tokens.CompletionTokens`    |
+| `is_streaming`          | `IsStreaming`                |
+| `is_success`            | `Outcome.IsSuccess`          |
+| `error_category`        | `Outcome.ErrorCategory`      |
+
+`quantization` and `error_category` remain nullable because they are conditional execution facts rather than universally available values.
+
 ## Storage & Persistence Model
 Local evidence collection relies entirely on zero-infrastructure, file-based persistence to ensure rapid execution and native cross-platform portability:
 
