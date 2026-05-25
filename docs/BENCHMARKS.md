@@ -157,16 +157,34 @@ Use one row per model/configuration after completing the prompt suite.
 
 | Model | Quant | Params | Avg latency (ms) | Avg tok/s | Peak RAM (GB) | Peak VRAM (GB)  | Overall rank |
 | :---- | :---- | :----- | ---------------: | --------: | ------------: | -------------:  | -----------: |
-| qwen3.5:2b | TBD | TBD | 4,818 | 64.85 | n/a | n/a | 1 |
-| nemotron-3-nano:4b | TBD | 4B | 4,207 | 55.25 | n/a | n/a | 2 |
-| deepseek-r1:1.5b | TBD | 1.5B | 9,434 | 59.13 | n/a | n/a | 3 |
-| granite4.1:3b | TBD | 3B | 9,581 | 48.07 | n/a | n/a | 4 |
+| nemotron-3-nano:4b | TBD | 4B | 4,207 | 55.25 | n/a | n/a | 1 |
+| qwen3.5:2b | TBD | TBD | 4,818 | 64.85 | n/a | n/a | 2 |
+| granite4.1:3b | TBD | 3B | 9,581 | 48.07 | n/a | n/a | 3 |
+| phi4-mini:3.8b | TBD | 3.8B | 16,897 | 47.23 | n/a | n/a | 4 |
 | qwen3.5:4b | Q4_K_M | 4.66B | 10,950 | 23.16 | n/a | n/a | 5 |
 | gemma4:e2b | TBD | TBD | 11,680 | 25.72 | n/a | n/a | 6 |
-| Phi-4-mini-instruct | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| deepseek-r1:1.5b | TBD | 1.5B | 9,434 | 59.13 | n/a | n/a | 7 |
+| ministral-3:3b | TBD | 3B | 5,865 | 64.86 | n/a | n/a | 8 |
 
 Current artifact set captures latency, token counts, throughput, success, and a single `ollama ps` snapshot. It does not include per-run peak RAM or VRAM measurements, so those cells remain `n/a` until resource telemetry is added to the benchmark script.
+
+### Rationale
+
+1. Nemotron 3 Nano 4B. Best overall balance. It is the fastest of the fully reliable models, went 15/15 on valid JSON, stayed concise, and was especially stable on reasoning, editing, and summarization. Its main weakness is semantic correctness inside code generation, but that is a narrower problem than schema failure.
+
+2. Qwen 3.5 2B. Best practical small-model contender. It was very fast, had strong overall task adherence, and only dropped one structured-output run out of fifteen. I place it above Granite because the latency and general usefulness gain is large, while the reliability drop is small rather than systemic.
+
+3. Granite 4.1 3B. Most structurally dependable alongside Nemotron, with 15/15 valid JSON, but weaker than Nemotron and Qwen 2B on practical usefulness because code-task quality still had meaningful defects and average latency is much higher. Safe protocol behavior, less convincing substance.
+
+4. Phi-4-mini 3.8B. I would move it above the malformed-output cluster because 15/15 schema compliance matters for an agent runtime. That said, this is a reluctant fourth place: its code quality and planning quality were weak enough that the outputs still need heavy human review.
+
+5. Qwen 3.5 4B. Better than the remaining low-ranked models because it was strong on four prompt classes and generally stayed grounded, but failing all three code-generation runs on valid JSON is too large a reliability penalty for a coding assistant. It is usable, but not dependable enough as a default.
+
+6. Gemma4:E2B. Very similar profile to Qwen 4B, but slower and heavier with no compensating quality win. Strong on reasoning, editing, planning, and summarization, yet the consistent P02 schema failure keeps it out of the top half.
+
+7. DeepSeek-R1 1.5B. Attractive on size and occasional speed, but too uneven. The benchmark notes show both schema breakdown and weak code-centric reasoning, which is a bad combination for an assistant expected to be observable and reliable.
+
+8. Ministral 3 3B. Clear last place despite excellent throughput. It breaks the benchmark’s highest-priority requirement too often, with only 5/15 valid JSON runs and failures across reasoning, code generation, and summarization. Fast failure is still failure.
 
 ## Detailed Runs
 
@@ -429,3 +447,89 @@ Warmup summary: P00 ran 3 times before the measured suite, averaging 16,639 ms t
 | Formatting discipline | Good overall except for code generation. 12 of 15 measured runs produced valid JSON; all three P02 runs failed schema validity because of malformed JSON in the response payload. |
 | Tool-use potential | Moderate to good. P04 consistently chose deterministic search-first workflows and sensible stop conditions, which aligns with the task, but the plans were generic and underused the available tool budget. |
 | Failure modes | Primary failure mode is malformed structured output on longer code-heavy responses, especially when emitting large code strings. Secondary issues are generic placeholder values in planning tasks and generated-code defects even when the high-level approach is reasonable. |
+
+### Model: Phi-4-mini 3.8B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | phi4-mini:3.8b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 3.3 GB reported by `ollama ps`; processor split reported as 100% GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 12,436 ms total latency and 49.28 tok/s. The first warmup incurred a cold-load penalty of 32,135 ms total, while warmup runs 2 and 3 completed in 2,563 ms and 2,611 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 198 | 82 | 5,928 | 26,250 | 89 | 268 | 45.21 | n/a | n/a | Yes | Valid JSON |
+| 2 | P01 | 203 | 15 | 3,610 | 17,131 | 89 | 177 | 49.03 | n/a | n/a | Yes | Valid JSON |
+| 3 | P01 | 204 | 20 | 5,758 | 26,904 | 89 | 275 | 47.76 | n/a | n/a | Yes | Valid JSON |
+| 1 | P02 | 199 | 76 | 5,996 | 26,287 | 85 | 282 | 47.04 | n/a | n/a | Yes | Valid JSON |
+| 2 | P02 | 205 | 19 | 7,990 | 35,338 | 85 | 385 | 48.19 | n/a | n/a | Yes | Valid JSON |
+| 3 | P02 | 198 | 19 | 8,943 | 38,104 | 85 | 414 | 46.30 | n/a | n/a | Yes | Valid JSON |
+| 1 | P03 | 244 | 68 | 875 | 4,068 | 89 | 41 | 46.83 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 200 | 20 | 1,227 | 5,551 | 89 | 58 | 47.28 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 206 | 15 | 1,274 | 5,549 | 89 | 58 | 45.52 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 200 | 77 | 2,274 | 10,101 | 114 | 105 | 46.18 | n/a | n/a | Yes | Valid JSON |
+| 2 | P04 | 199 | 20 | 1,934 | 8,919 | 114 | 94 | 48.61 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 201 | 15 | 1,942 | 8,799 | 114 | 92 | 47.37 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 204 | 89 | 2,890 | 13,171 | 124 | 139 | 48.10 | n/a | n/a | Yes | Valid JSON |
+| 2 | P05 | 205 | 17 | 2,820 | 13,481 | 124 | 140 | 49.64 | n/a | n/a | Yes | Valid JSON |
+| 3 | P05 | 203 | 15 | 3,169 | 13,806 | 124 | 144 | 45.44 | n/a | n/a | Yes | Valid JSON |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Strong structurally. All 15 measured runs returned valid JSON and stayed within the requested task shapes. The model was verbose on P01 and especially long on P02, which contributed heavily to total latency. |
+| Code quality | Weak to moderate. P03 outputs targeted the null case but were not reliably minimal or correct, and the P02 retry-policy answers contained major C# defects such as invalid syntax, mixed exception syntax from other languages, broken field naming, malformed control flow, and blocking waits inside async-oriented code. |
+| Hallucination risk | Moderate. The model generally stayed on the benchmark prompt, but it introduced unsupported code constructs, odd metadata such as a generated date, and generic planning placeholders with high confidence. |
+| Formatting discipline | Excellent. All 15 measured runs produced valid JSON, even when the payload content itself was low quality or excessively long. |
+| Tool-use potential | Limited to moderate. P04 outputs were syntactically valid, but they were weak diagnostically: empty symbol names, placeholder paths, and premature boolean stop conditions made the plans much less actionable than the stronger models. |
+| Failure modes | Primary failure mode is poor semantic quality hidden behind clean structure. Phi-4-mini stays schema-compliant, but it is slow on reasoning and code generation tasks and still requires close human review for correctness. |
+
+### Model: Ministral 3 3B
+#### Configuration
+| Field | Value |
+| :---- | :---- |
+| Ollama tag | ministral-3:3b |
+| Parameters | think:false, stream:false, format:json |
+| Quantization | TBD |
+| Context window | 4096 |
+| Temperature | 0.1 |
+| Other overrides | num_predict=512 |
+| Loaded model snapshot | 5.0 GB reported by `ollama ps`; processor split reported as 100% GPU |
+
+Warmup summary: P00 ran 3 times before the measured suite, averaging 3,065 ms total latency and 71.72 tok/s. The first warmup incurred a cold-load penalty of 6,555 ms total, while warmup runs 2 and 3 completed in 1,331 ms and 1,308 ms.
+
+#### Run Results
+| Run | Prompt ID | Load ms | Prompt ms | Generation ms | Total ms | Prompt tokens | Completion tokens | Tok/s | Peak RAM GB | Peak VRAM GB | Success | Notes |
+| ---: | :-------- | ------: | --------: | -------------: | -------: | ------------: | ----------------: | ----: | ----------: | ------------: | :------ | :---- |
+| 1 | P01 | 203 | 46 | 7,346 | 8,130 | 93 | 512 | 69.70 | n/a | n/a | No | Invalid JSON response |
+| 2 | P01 | 245 | 14 | 7,419 | 8,216 | 93 | 512 | 69.02 | n/a | n/a | No | Invalid JSON response |
+| 3 | P01 | 205 | 12 | 7,377 | 8,121 | 93 | 512 | 69.41 | n/a | n/a | No | Invalid JSON response |
+| 1 | P02 | 226 | 45 | 7,504 | 8,425 | 88 | 512 | 68.23 | n/a | n/a | No | Invalid JSON response |
+| 2 | P02 | 203 | 13 | 7,464 | 8,341 | 88 | 512 | 68.60 | n/a | n/a | No | Invalid JSON response |
+| 3 | P02 | 216 | 12 | 7,438 | 8,210 | 88 | 512 | 68.84 | n/a | n/a | No | Invalid JSON response |
+| 1 | P03 | 214 | 46 | 1,842 | 2,407 | 94 | 129 | 70.02 | n/a | n/a | Yes | Valid JSON |
+| 2 | P03 | 208 | 13 | 1,799 | 2,365 | 94 | 129 | 71.70 | n/a | n/a | Yes | Valid JSON |
+| 3 | P03 | 234 | 13 | 1,839 | 2,415 | 94 | 129 | 70.15 | n/a | n/a | Yes | Valid JSON |
+| 1 | P04 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | n/a | n/a | No | Invalid JSON response |
+| 2 | P04 | 241 | 17 | 2,296 | 3,105 | 125 | 160 | 69.68 | n/a | n/a | Yes | Valid JSON |
+| 3 | P04 | 209 | 13 | 2,277 | 3,076 | 125 | 160 | 70.25 | n/a | n/a | Yes | Valid JSON |
+| 1 | P05 | 239 | 62 | 7,410 | 8,282 | 128 | 512 | 69.09 | n/a | n/a | No | Invalid JSON response |
+| 2 | P05 | 207 | 11 | 7,387 | 8,639 | 128 | 512 | 69.31 | n/a | n/a | No | Invalid JSON response |
+| 3 | P05 | 243 | 12 | 7,438 | 8,249 | 128 | 512 | 68.84 | n/a | n/a | No | Invalid JSON response |
+
+#### Quality Notes
+| Area | Notes |
+| :--- | :---- |
+| Instruction following | Weak overall despite strong raw speed. The model only succeeded consistently on P03 and partly on P04; it failed all measured runs for P01, P02, and P05 because it did not produce valid JSON under the requested schema. |
+| Code quality | Mixed to weak. P03 outputs were the only consistently usable slice, but even there the patches shown in the response log were logically incorrect because they placed the null check after `items.Count()`. P02 outputs were long and fast, but the payloads did not remain valid JSON and the visible code had correctness issues such as invalid `catch`/`else` flow and incorrect `TimeSpan` math. |
+| Hallucination risk | Moderate. The model stayed on the broad task, but it added irrelevant frameworks and unsupported implementation claims, especially in reasoning prompts that over-elaborated and then broke schema constraints. |
+| Formatting discipline | Poor for benchmark purposes. Only 5 of 15 measured runs produced valid JSON, and every failure mode in this run set was a schema-validity failure rather than a transport or timeout issue. |
+| Tool-use potential | Limited. The successful P04 runs were acceptable, but one run failed outright and the surviving plans did not stand out for determinism or repo awareness. |
+| Failure modes | Primary failure mode is schema collapse at higher completion lengths: the model is fast and high-throughput, but it tends to run to the token limit and break structured-output reliability on reasoning, code generation, and summarization. |

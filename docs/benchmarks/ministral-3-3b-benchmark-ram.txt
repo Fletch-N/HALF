@@ -1,0 +1,2 @@
+NAME              ID              SIZE      PROCESSOR    CONTEXT    UNTIL
+ministral-3:3b    f04aa1c738f6    5.0 GB    100% GPU     4096       4 minutes from now

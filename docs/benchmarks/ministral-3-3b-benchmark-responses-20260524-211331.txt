@@ -1,0 +1,476 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0,
+  "metadata": {
+    "response_format": "JSON",
+    "assistant_role": "benchmark_warmup_assistant"
+  }
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0,
+  "metadata": {
+    "response_format": "JSON",
+    "assistant_role": "benchmark_warmup_assistant"
+  }
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1.0,
+  "metadata": {
+    "response_format": "JSON",
+    "assistant_role": "benchmark_warmup_assistant"
+  }
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: No
+{
+  "decision": "single-service prototype",
+  "reasoning": {
+    "simplicity": "A single-service architecture reduces complexity by eliminating inter-service communication overhead, network latency, and coordination challenges. This is critical for constrained hardware where performance and reliability are directly impacted by fewer moving parts.",
+    "observability": "A monolithic service can be instrumented and observed more easily with built-in logging, tracing, and metrics collection (e.g., using OpenTelemetry or custom logging frameworks). Distributed systems require additional tools for cross-service observability.",
+    "safety": "A single service reduces attack surface by consolidating all logic and data access into one unit. This minimizes the risk of misconfigurations or vulnerabilities in separate services. For constrained hardware, this also simplifies resource management (e.g., memory, CPU) since there’s only one process to manage.",
+    "usefulness": "A prototype should focus on core functionality first. Distributing services early introduces unnecessary complexity for a small team building a local development assistant. The team can iterate on the core logic before considering modularization or scaling later.",
+    "measurable": "A single-service prototype allows for faster feedback loops. Metrics like execution time, memory usage, and error rates can be gathered directly from the single process. Distributed systems require additional instrumentation and tooling to measure cross-service performance."
+  },
+  "tradeoffs": {
+    "flexibility": "Limited flexibility for future modularization or scaling. If the assistant grows beyond its initial scope, refactoring into multiple services may become more complex.",
+    "scalability": "Scalability is inherently limited to the hardware constraints of the single service. If the assistant needs to handle more users or data, the hardware may need to be upgraded or the service may need to be containerized (which introduces complexity).",
+    "maintainability": "Maintainability is higher in a monolithic service for small teams, as there’s only one codebase to review and update. However, as the project grows, this may become a bottleneck."
+  },
+  "risk": {
+    "technical": {
+      "single point of failure": "If the single service crashes or becomes unresponsive, the entire assistant is down. This is mitigated by ensuring the hardware is robust and the service is designed to handle errors gracefully.",
+      "hardware constraints": "The service must be optimized for the constrained hardware, which may limit the complexity of the logic or data
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: No
+{
+  "decision": "single-service prototype",
+  "reasoning": {
+    "simplicity": "A single-service architecture reduces complexity by eliminating inter-service communication overhead, network latency, and coordination challenges. This is critical for constrained hardware where performance and reliability are directly impacted by minimal resource usage.",
+    "observability": "A monolithic service can be instrumented more easily with built-in logging, tracing, and metrics collection (e.g., using OpenTelemetry or custom logging frameworks). Observability tools can be integrated directly without additional service discovery or API gateways.",
+    "safety": "A single service reduces attack surface by consolidating all logic and data access into one unit. This minimizes the risk of misconfigurations, unauthorized access, or service-specific vulnerabilities that could arise from distributed systems.",
+    "usefulness": "A prototype should focus on core functionality first. A single service allows the team to validate core features (e.g., local task execution, user interaction, and data handling) quickly and iteratively. Distributed systems introduce unnecessary complexity for a proof-of-concept.",
+    "iterative development": "A monolithic approach enables faster iteration. Changes can be deployed and tested without worrying about service dependencies, rollback strategies, or cascading failures. This aligns with the goal of building a local development assistant that can be refined over time."
+  },
+  "tradeoffs": {
+    "scalability": "Long-term scalability is limited by the single service. If the assistant grows beyond its initial scope, refactoring into distributed services may become necessary, but this would require significant effort and risk.",
+    "maintainability": "A monolithic service may become harder to maintain as it grows. Debugging and scaling individual components within a single service can be challenging, though this is less of an issue for a prototype.",
+    "resource efficiency": "A single service can be optimized for the specific hardware constraints, but it may not scale horizontally if demand grows beyond the hardware’s capabilities."
+  },
+  "risk": {
+    "technical debt": "Risk of technical debt due to monolithic design if the assistant’s scope expands beyond the initial prototype. Future refactoring could introduce complexity and downtime.",
+    "hardware limitations": "Risk of resource exhaustion if the single service is not carefully optimized for constrained hardware. This could lead to crashes or performance degradation.",
+    "observability limitations": "While observability is easier in a single service, it may not scale well if the assistant
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: No
+{
+  "decision": "single-service prototype",
+  "reasoning": {
+    "simplicity": "A single-service architecture reduces complexity in version 1 by minimizing dependencies, simplifying deployment, and reducing operational overhead. This allows the team to focus on core functionality without premature distribution.",
+    "observability": "A monolithic service can be instrumented for observability (logging, metrics, tracing) with minimal effort, using lightweight tools like OpenTelemetry or Prometheus. Observability can be incrementally added as needed.",
+    "safety": "A single service reduces attack surface and simplifies error handling. If the service crashes, it won’t cascade to other systems. Isolation also makes debugging easier.",
+    "usefulness": "A prototype can be built quickly with minimal resources. The team can validate core features (e.g., local command execution, logging, or basic CLI) before considering distribution.",
+    "constraints": "The hardware is constrained, so distributed services would introduce network overhead, latency, and resource contention. A single service avoids these tradeoffs."
+  },
+  "tradeoffs": {
+    "pro": [
+      "Faster development and iteration",
+      "Lower operational complexity",
+      "Easier debugging and observability",
+      "Reduced risk of failure"
+    ],
+    "con": [
+      "Harder to scale or extend later",
+      "Less modularity for future features",
+      "Potential for tight coupling if features grow",
+      "Limited parallelism (single-threaded or single-process execution)"
+    ]
+  },
+  "risk": {
+    "high": [
+      "If the prototype becomes too complex, it may become unwieldy to maintain",
+      "Future refactoring could be painful if the service grows beyond its initial scope"
+    ],
+    "medium": [
+      "If the team doesn’t validate core functionality early, they may spend time building a monolith that isn’t useful",
+      "Observability and safety features may need to be added incrementally"
+    ],
+    "low": [
+      "Hardware constraints are manageable with a single service",
+      "The team can iterate quickly and pivot if the prototype isn’t useful"
+    ]
+  },
+  "confidence": 0.85,
+  "justification": "The team’s experience, hardware constraints, and goal of a fast prototype justify starting simple. Version 1 should focus on core functionality (e.g., CLI, logging, or basic task execution) with observ
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: No
+{
+  "summary": {
+    "name": "RetryPolicy",
+    "purpose": "A utility class for retrying asynchronous operations with exponential backoff, support for CancellationToken, and configurable max attempts.",
+    "key_features": [
+      "Exponential backoff",
+      "Max retry attempts",
+      "CancellationToken support",
+      "Dependency-free"
+    ]
+  },
+  "code": {
+    "file": "RetryPolicy.cs",
+    "content": "using System;\nusing System.Threading;\nusing System.Threading.Tasks;\n\npublic static class RetryPolicy\n{\n    public static async Task<TResult> ExecuteAsync<TResult>(\n        Func<CancellationToken, Task<TResult>> operation,\n        int maxAttempts = 3,\n        TimeSpan initialBackoff = default,\n        TimeSpan maxBackoff = TimeSpan.FromSeconds(10),\n        CancellationToken cancellationToken = default\n    )\n    {\n        int attempt = 0;\n        TimeSpan backoff = initialBackoff;\n\n        while (true)\n        {\n            attempt++;\n            try\n            {\n                return await operation(cancellationToken);\n            }\n            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)\n            {\n                cancellationToken.ThrowIfCancellationRequested();\n            }\n            catch (Exception ex) when (attempt < maxAttempts)\n            {\n                await Task.Delay(backoff, cancellationToken);\n                backoff = Math.Min(backoff * 2, maxBackoff);\n            }\n            else\n            {\n                throw;\n            }\n        }\n    }\n}"
+  },
+  "notes": {
+    "design_choices": [
+      "Exponential backoff starts from `initialBackoff` and doubles each retry, capped by `maxBackoff`.",
+      "CancellationToken is propagated to `Task.Delay` and the operation to avoid deadlocks.",
+      "No external dependencies; pure C# 7+ syntax.",
+      "Supports generic return type `TResult` for flexibility."
+    ],
+    "limitations": [
+      "No retry on transient exceptions (e.g., `TimeoutException`). Add logic to filter exceptions if needed.",
+      "No retry on `AggregateException`; individual inner exceptions are thrown directly."
+    ],
+    "usage_example
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: No
+{
+  "summary": {
+    "name": "RetryPolicy",
+    "purpose": "A utility class for retrying async operations with exponential backoff, support for CancellationToken, and configurable max attempts.",
+    "key_features": [
+      "Exponential backoff",
+      "Max retry attempts",
+      "CancellationToken support",
+      "Dependency-free"
+    ]
+  },
+  "code": {
+    "class": "using System;",
+    "class": "using System.Threading;",
+    "class": "using System.Threading.Tasks;",
+
+    "class": "public static class RetryPolicy",
+    "class": "{",
+    "class": "    private static readonly Random _random = new Random();",
+    "class": "    private static readonly double _jitterFactor = 0.1;",
+
+    "class": "    public static async Task<TResult> ExecuteAsync<TResult>(Func<CancellationToken, Task<TResult>> operation, int maxAttempts = 3, TimeSpan initialBackoff = default, TimeSpan maxBackoff = default)",
+    "class": "    {",
+    "class": "        var token = CancellationToken.None;",
+    "class": "        var attempt = 0;",
+    "class": "        var backoff = initialBackoff;",
+
+    "class": "        while (true)",
+    "class": "        {",
+    "class": "            attempt++;",
+    "class": "            try",
+    "class": "            {",
+    "class": "                return await operation(token);",
+    "class": "            }",
+    "class": "            catch (OperationCanceledException) when (token.IsCancellationRequested)",
+    "class": "            {",
+    "class": "                token.ThrowIfCancellationRequested();",
+    "class": "            }",
+    "class": "            catch (Exception) when (attempt < maxAttempts)",
+    "class": "            {",
+    "class": "                await Task.Delay(backoff, token);",
+    "class": "                backoff = Math.Min(backoff * 2, maxBackoff);",
+    "class": "                // Add jitter to avoid thundering herd",
+    "class": "                backoff = TimeSpan.FromMilliseconds(_random.NextDouble() * _jitterFactor * backoff.TotalMilliseconds);",
+    "class": "            }",
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: No
+{
+  "summary": {
+    "name": "RetryPolicy",
+    "purpose": "A utility class for retrying async operations with exponential backoff, support for CancellationToken, and configurable max attempts.",
+    "key_features": [
+      "Exponential backoff",
+      "Max retry attempts",
+      "CancellationToken support",
+      "Dependency-free"
+    ]
+  },
+  "code": {
+    "class_definition": "using System; using System.Threading.Tasks; using System.Threading; namespace RetryPolicy; public class RetryPolicy {",
+    "methods": [
+      {
+        "name": "ExecuteAsync",
+        "signature": "public static async Task<TResult> ExecuteAsync(Func<CancellationToken, Task<TResult>> operation, int maxAttempts = 3, TimeSpan initialBackoff = default, TimeSpan maxBackoff = default)",
+        "body": "    var attempts = 0;\n    var backoff = initialBackoff;\n    var lastException = default(Exception);\n    \n    while (attempts < maxAttempts)\n    {\n        try\n        {\n            return await operation(CancellationToken.None);\n        }\n        catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)\n        {\n            throw;\n        }\n        catch (Exception ex)\n        {\n            lastException = ex;\n            attempts++;\n            \n            if (attempts < maxAttempts)\n            {\n                if (maxBackoff == TimeSpan.Zero || backoff <= maxBackoff)\n                {\n                    await Task.Delay(backoff, CancellationToken.None);\n                    backoff = backoff.Add(TimeSpan.FromSeconds(1)); // Exponential backoff\n                }\n                else\n                {\n                    await Task.Delay(maxBackoff, CancellationToken.None);\n                    break;\n                }\n            }\n            else\n            {\n                throw lastException;\n            }\n        }\n    }\n    \n    throw new InvalidOperationException(\"Max attempts exceeded.\");"
+      }
+    ],
+    "class_closure": "}"
+  },
+  "notes": {
+    "design_choices": [
+      "Exponential backoff starts with `initialBackoff` and doubles each retry (capped by `maxBackoff`).",
+      "CancellationToken is passed to
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+  "likely_bug": true,
+  "minimal_change": true,
+  "patch": "diff --git a/Method.cs b/Method.cs\nindex abc1234..def5678 100644\n--- a/Method.cs\n+++ b/Method.cs\n@@ -1,5 +1,6 @@\n public static int CountItems(IEnumerable<string> items) {\n     return items.Count();\n+\n     if (items == null)\n         return 0;\n }",
+  "confidence": 0.98
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+  "likely_bug": true,
+  "minimal_change": true,
+  "patch": "diff --git a/Method.cs b/Method.cs\nindex abc1234..def5678 100644\n--- a/Method.cs\n+++ b/Method.cs\n@@ -1,5 +1,6 @@\n public static int CountItems(IEnumerable<string> items) {\n     return items.Count();\n+\n     if (items == null)\n         return 0;\n }",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+  "likely_bug": true,
+  "minimal_change": true,
+  "patch": "diff --git a/Method.cs b/Method.cs\nindex abc1234..def5678 100644\n--- a/Method.cs\n+++ b/Method.cs\n@@ -1,5 +1,6 @@\n public static int CountItems(IEnumerable<string> items) {\n     return items.Count();\n+\n     if (items == null)\n         return 0;\n }",
+  "confidence": 0.95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: No
+{
+  "likely_cause": [
+    {
+      "description": "Symbol renaming may have broken references in the project, such as calls to the renamed class, inheritance relationships, or method overrides.",
+      "confidence": 0.95
+    },
+    {
+      "description": "The build system (MSBuild) may have cached references to the old symbol name, causing a compilation error.",
+      "confidence": 0.85
+    }
+  ],
+  "first_tool_to_call": "list_recent_changes",
+  "first_tool_arguments": {
+    "limit": 5,
+    "include_renames": true
+  },
+  "followup_tools": [
+    {
+      "tool": "search_symbols",
+      "arguments": {
+        "symbol_name": "OldClassName", 	"exclude_renames": true
+      },
+      "priority": 1,
+      "description": "Identify all usages of the old class name to determine if any references remain."
+    },
+    {
+      "tool": "inspect_file",
+      "arguments": {
+        "path": "ProjectFile.csproj"
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": [
+    {
+      "description": "Symbol renaming may have broken references in other files (e.g., method calls, field accesses, or type usages) if the renamed class was referenced indirectly or in multiple files.",
+      "confidence": 0.9
+    },
+    {
+      "description": "Namespace or assembly-level changes (e.g., if the renamed class was in a namespace that was also modified or if the assembly was renamed).",
+      "confidence": 0.8
+    }
+  ],
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": "OldClassName", 	"search_scope": "project" 	}
+  }
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": [
+    {
+      "description": "Symbol renaming may have broken references in other files (e.g., method calls, field accesses, or type usages) if the renamed class was referenced indirectly or in multiple files.",
+      "confidence": 0.9
+    },
+    {
+      "description": "Namespace or assembly-level changes (e.g., if the renamed class was in a namespace that was also modified or if the assembly was renamed).",
+      "confidence": 0.7
+    }
+  ],
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": "OldClassName", 	"search_scope": "project" 	}
+  }
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: No
+{
+  "summary": {
+    "description": "Benchmark comparison of two models (Model A and Model B) on response time, schema adherence, and factual accuracy for structured-output tasks.",
+    "context": {
+      "test_parameters": {
+        "context_length": "same for both models",
+        "output_token_limit": "same for both models"
+      },
+      "priorities": ["reliability", "structured output", "valid JSON output"]
+    }
+  },
+  "key_findings": [
+    {
+      "model": "Model A",
+      "response_time": 4.2,
+      "valid_json_output": true,
+      "structured_output_compliance": "consistent",
+      "factual_accuracy": {
+        "valid": true,
+        "caveat": "sometimes made unsupported factual claims"
+      }
+    },
+    {
+      "model": "Model B",
+      "response_time": 2.8,
+      "valid_json_output": "not explicitly tested for validity",
+      "structured_output_compliance": {
+        "valid": false,
+        "failures": 2,
+        "schema_violation": true
+      },
+      "factual_accuracy": "not explicitly evaluated"
+    }
+  ],
+  "recommendations": [
+    {
+      "focus": "Model A",
+      "suggestion": "Prioritize structured output and reliability over raw speed, despite unsupported factual claims. Validate JSON output for robustness."
+    },
+    {
+      "focus": "Model B",
+      "suggestion": "Improve adherence to schema requirements to mitigate failures. Further validation of factual accuracy and JSON output is recommended."
+    },
+    {
+      "general": "Benchmarking should explicitly test for unsupported factual claims and JSON validity to ensure comprehensive reliability assessments."
+    }
+  ],
+  "caveats": [
+    {
+      "description": "Response times do not reflect performance under varying workloads or edge cases.",
+      "impact": "Speed alone may not be a reliable indicator of model suitability for structured-output tasks."
+    },
+    {
+      "description": "Schema compliance failures in Model B were not quantified beyond the two instances reported.",
+      "impact": "Further investigation may be needed to determine if this is a consistent or isolated issue."
+    },
+    {
+      "description": "Factual claims in Model A were not systematically evaluated for unsupported assertions.",
+      "impact": "This may introduce inaccuracies in downstream applications requiring factual consistency
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: No
+{
+  "summary": {
+    "description": "Benchmark comparison between Model A and Model B focusing on response time, schema adherence, factual accuracy, and reliability for structured-output tasks.",
+    "context": {
+      "test_parameters": {
+        "context_length": "same for both models",
+        "output_token_limit": "same for both models"
+      },
+      "priorities": ["reliability", "structured output", "valid JSON output"]
+    }
+  },
+  "key_findings": [
+    {
+      "model": "Model A",
+      "response_time": 4.2,
+      "valid_json_output": true,
+      "structured_output": true,
+      "factual_accuracy": {
+        "valid": true,
+        "caveat": "sometimes made unsupported factual claims"
+      },
+      "schema_adherence": "N/A (not tested for this model)"
+    },
+    {
+      "model": "Model B",
+      "response_time": 2.8,
+      "valid_json_output": "N/A (not explicitly tested for this model)",
+      "structured_output": {
+        "valid": true,
+        "failures": 2
+      },
+      "factual_accuracy": "N/A (not explicitly tested for this model)",
+      "schema_adherence": {
+        "valid": false,
+        "failures": 2
+      }
+    }
+  ],
+  "recommendations": [
+    {
+      "focus": "Model A",
+      "suggestions": [
+        "Improve factual accuracy by refining training data to avoid unsupported claims",
+        "Ensure consistent schema adherence for structured outputs (if applicable)"
+      ]
+    },
+    {
+      "focus": "Model B",
+      "suggestions": [
+        "Investigate schema adherence failures to ensure compliance with output requirements",
+        "Validate JSON output generation for structured tasks to prevent schema violations"
+      ]
+    },
+    "general_advice_for_both_models_when_prioritizing_reliability_and_structured_outputs:",
+    "Ensure robustness in handling edge cases and validate schema adherence during development"
+  ],
+  "caveats": [
+    {
+      "test_scope": "Benchmark results may not reflect performance under varying input complexities or dynamic contexts",
+      "schema_adherence": "Model B’s schema failures may be context-dependent and not universally applicable",
+      "factual_accuracy": "Model A’s unsupported claims could vary based on training data or prompt specificity
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: No
+{
+  "summary": {
+    "description": "Benchmark comparison of two models (Model A and Model B) on response time, schema adherence, and factual accuracy in structured-output tasks.",
+    "context": "Both models were evaluated under identical conditions: same context length and output token limit. The benchmark prioritizes reliability and structured output over raw speed."
+  },
+  "key_findings": [
+    {
+      "model": "Model A",
+      "response_time": 4.2,
+      "structured_output_validity": "Valid JSON for structured-output tasks",
+      "factual_accuracy": "Sometimes made unsupported factual claims",
+      "schema_compliance": "N/A (not explicitly mentioned as failing)"
+    },
+    {
+      "model": "Model B",
+      "response_time": 2.8,
+      "structured_output_validity": "Failed to follow requested schema twice",
+      "factual_accuracy": "N/A (not explicitly mentioned)",
+      "schema_compliance": "Inconsistent adherence to schema"
+    }
+  ],
+  "recommendations": [
+    {
+      "focus": "Schema Adherence",
+      "action": "Prioritize validation of schema compliance over raw speed, especially for structured-output tasks. Model B’s failures suggest a need for stricter schema enforcement or iterative refinement."
+    },
+    {
+      "focus": "Factual Accuracy",
+      "action": "Monitor unsupported factual claims (Model A) and ensure robustness against hallucinations. Implement fact-checking or grounding mechanisms if factual reliability is critical."
+    },
+    {
+      "focus": "Benchmark Design",
+      "action": "Clarify whether schema compliance is a primary metric or secondary. If schema adherence is critical, adjust evaluation weights accordingly to avoid overemphasis on speed."
+    }
+  ],
+  "caveats": [
+    {
+      "description": "Response times (4.2s vs. 2.8s) may not reflect true performance differences if speed is not the primary goal. Benchmark prioritization (reliability > speed) could skew interpretations.",
+      "impact": "Speed metrics alone may mislead stakeholders if structured-output correctness is more important."
+    },
+    {
+      "description": "Unsupported factual claims (Model A) and schema failures (Model B) were not quantified in frequency or severity. Limited data may underrepresent broader performance gaps.",
+      "impact": "Qualitative observations lack statistical rigor; deeper analysis (e.g., error rate
+--------------------------------------------------

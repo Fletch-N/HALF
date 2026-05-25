@@ -1,0 +1,253 @@
+﻿PromptID: P00 | Category: Warmup | Run: 1 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 2 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1
+}
+--------------------------------------------------
+PromptID: P00 | Category: Warmup | Run: 3 | Success: Yes
+{
+  "status": "ready",
+  "purpose": "warmup",
+  "confidence": 1
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 1 | Success: Yes
+{
+  "decision": "simple_single_service_prototype",
+  "reasoning": "Starting small allows for quicker iteration cycles which is crucial in constrained hardware environments where resources are limited.",
+  "tradeoffs": {
+    "advantages": [
+      "Faster development time due to fewer moving parts, allowing the team to focus on core functionality and immediate feedback loops with users."
+    ],
+    "disadvantages": [
+      "Limited scalability from inception. If future requirements demand it, significant refactoring or redesign will be necessary.",
+      "Potential for monolithic architecture could lead to challenges in maintenance as complexity grows over time."
+    ]
+  },
+  "risk": {
+    "low_risk": true,
+    "potential_issues": [
+      "May not fully utilize the potential of distributed systems if hardware constraints are overcome later on, leading to a less efficient system.",
+      "Could become too tightly coupled and difficult to maintain as features expand."
+    ]
+  },
+  "confidence_level": {
+    "high_confidence_in_decision": true,
+    "reasoning_for_high_confidence": [
+      "The primary goal is rapid prototyping with observable, safe outcomes. A single-service prototype aligns well with this objective.",
+      "Constrained hardware necessitates a minimalist approach to avoid overloading the system."
+    ]
+  }
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 2 | Success: Yes
+{
+  "decision": "simple_single_service_prototype",
+  "reasoning": "Starting small allows for quicker iterations on the core functionality of being observable, safe, and useful without getting bogged down by complexities introduced in a distributed multi-service architecture.",
+  "tradeoffs": {
+    "advantages": [
+      "Faster development cycle due to fewer moving parts",
+      "Easier debugging with centralized codebase"
+    ],
+    "disadvantages": [
+      "Potential scalability issues as the project grows",
+      "Single point of failure if not designed carefully"
+    ]
+  },
+  "risk": {
+    "low_risk": true,
+    "reasoning": "The risk is lower because there are fewer components that can fail. The team has more control over all aspects, which simplifies testing and validation."
+  },
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P01 | Category: General reasoning | Run: 3 | Success: Yes
+{
+  "decision": "simple_single_service_prototype",
+  "reasoning": "Starting small allows for quicker iteration cycles which is crucial in constrained hardware environments where resources are limited.",
+  "tradeoffs": {
+    "advantages": [
+      "Faster development time due to fewer moving parts, allowing the team to focus on core functionality and immediate feedback loops with users."
+    ],
+    "disadvantages": [
+      "Limited scalability from inception. If future requirements demand it, significant refactoring or redesign will be necessary.",
+      "Potential for monolithic architecture could lead to difficulties in maintenance as complexity grows over time."
+    ]
+  },
+  "risk": {
+    "low_risk": true,
+    "potential_issues": [
+      "May not fully utilize the potential of distributed systems if requirements change later on, but this is mitigated by starting simple and evolving iteratively.",
+      "Could lead to a less flexible architecture in terms of scaling out services as needed."
+    ]
+  },
+  "confidence": {
+    "high_confidence_in_decision": true,
+    "reasoning_for_high_confidence": [
+      "The constraints on hardware necessitate an efficient use of resources, which aligns with the benefits of starting small.",
+      "Early feedback from users can significantly influence and improve product development in a resource-constrained environment."
+    ]
+  }
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 1 | Success: Yes
+{
+  "summary": "Utility class for implementing retries on async operations.",
+  "code": {
+    "language": "C#",
+    "content": "public static class RetryPolicy\n{\n\tprivate const int MaxRetries = 3;\n\tnon-static void ExecuteWithRetryAsync(Func<Task> operation, CancellationToken cancellationToken)\n\t{\n\t\tint retryCount = 0;\n\t\tdo\n\t\t{\n\t\t\ttry\n\t\t\t{\n\t\t\t\toperation().Wait(cancellationToken);\n\t\t\t\tbreak; // Success!\n\t\t\t}\n\t\t\texcept (Exception ex) when (retryCount < MaxRetries)\n\t\t\t{\n\t\t\t\tConsole.WriteLine($\"Retry {retryCount + 1} after exception: {ex.Message}\\n\");\n\t\t\t\tThread.Sleep((int)Math.Pow(2, retryCount)); // Exponential backoff\n\t\t\t\tretryCount++;\n\t\t\t}\n\t\t}\n\t\twhile (true);\n\t}",
+    "confidence": 0.85
+  },
+  "notes": "This utility class provides a simple way to execute an asynchronous operation with retries using exponential backoff strategy.",
+  "dateGenerated": "2023-04-01"
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 2 | Success: Yes
+{
+  "summary": "Utility Class for Retries",
+  "code": {
+    "language": "C#",
+    "content": "public class RetryPolicy\n{\n\tprivate int _maxAttempts;\n\tprivate TimeSpan? _delay = null;\n\n\tpublic RetryPolicy(int maxAttempts)\n\t{\n\t\t_MaxAttempts = maxAttempts + 1;\n\t}\n\n\tpublic async Task<T> ExecuteAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken) where T : notnull\n\t{\n\t\tint attemptCount = 0;\n\t\tdelay ??= TimeSpan.FromSeconds(2);\n\t\twhile (attemptCount < _maxAttempts)\n\t\t{\n\t\t\ttry\n\t\t\t{\n\t\t\t\tvar result = await operation().ConfigureAwait(false);\n\t\t\t\treturn result;\n\t\t\t\texception => cancellationToken.ThrowIfCancellationRequested(exception), // Handle exceptions and cancel if requested.\n\t\t}\n\t\tcatch (Exception ex) when (!cancellationToken.IsCancellationRequested)\n\t\t{\n\t\t\tattemptCount++;\n\t\t\tif (attemptCount >= _maxAttempts || !delay.HasValue)\n\t\t\t{\n\t\t\t\texception = new TimeoutException(); // Or any other exception to indicate failure.\n\t\t\t}\n\t\t\tawait Task.Delay(delay.Value, cancellationToken).ConfigureAwait(false);\n\t\t} else\n\t\t{\n\t\t\tthrow;\n\t\t}\n\t\t}\n\t}",
+    "notes": "This class provides a simple retry mechanism with exponential backoff for asynchronous operations. It throws an exception if the maximum number of attempts is reached or upon cancellation.",
+    "confidence": 0.85
+  }
+}
+--------------------------------------------------
+PromptID: P02 | Category: Code generation | Run: 3 | Success: Yes
+{
+  "summary": "Utility Class for Retries",
+  "code": {
+    "language": "C#",
+    "content": "public class RetryPolicy\n{\n\tprivate int _maxAttempts;\n\tprivate TimeSpan? _delay = null;\n\n\tpublic RetryPolicy(int maxAttempts)\n\t{\n\t\t_MaxAttempts = maxAttempts + 1; // Add one for the initial attempt.\n\t}\n\n\tpublic async Task<T> ExecuteAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken) where T : notnull\n\t{\n\t\tint attempts = 0;\n\t\tdelay ??= TimeSpan.FromSeconds(1);\n\t\twhile (attempts < _maxAttempts)\n\t\t{\n\t\t\ttry\n\t\t\t{\n\t\t\t\tvar result = await operation().ConfigureAwait(false);\n\t\t\t\treturn result; // Return the successful outcome.\n\t\t\t}\n\t\t\texcept System.Threading.Tasks.TaskCanceledException when cancellationToken.IsCancellationRequested)\n\t\t\t{\n\t\t\t\t// Handle task cancellation if needed here.\n\t\t\t\tbreak;\n\t\t\t}\n\n\t\t\tcatch (System.Exception ex) when (!ex is System.TimeoutException || attempts >= _maxAttempts - 1)\n\t\t\t{\n\t\t\t\tdelay = TimeSpan.FromSeconds(Math.Pow(2, attempts)); // Exponential backoff.\n\t\t\t\ttasks.Delay(delay).Wait(cancellationToken);\n\n\t\t\tattempts++;\n\t\t}\n\t\tthrow new System.InvalidOperationException($\"Failed after {_maxAttempts} attempts: {ex.Message}\");"
+  },
+  "notes": "This class provides a simple retry mechanism with exponential backoff for asynchronous operations. It can be used to handle transient failures in network calls or other unreliable systems.",
+  "confidence": 0.85
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 1 | Success: Yes
+{
+    "likely_bug": true,
+    "minimal_change": false,
+    "patch": "-\n+return items?.Count() ?? 0;",
+    "confidence": 95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 2 | Success: Yes
+{
+    "likely_bug": true,
+    "minimal_change": false,
+    "patch": "-\n+public static int CountItems(IEnumerable<string> items)\n{\n\treturn (items ?? Enumerable.Empty<string>()).Count();",
+    "confidence": 95
+}
+--------------------------------------------------
+PromptID: P03 | Category: Code editing | Run: 3 | Success: Yes
+{
+    "likely_bug": true,
+    "minimal_change": false,
+    "patch": "-\n+public static int CountItems(IEnumerable<string> items)\n{\n\treturn (items ?? Enumerable.Empty<string>()).Count();",
+    "confidence": 95
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 1 | Success: Yes
+{
+  "likely_cause": "Class renaming mismatch in codebase",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": ""
+  },
+  "followup_tools": [
+    {
+      "tool": "inspect_file",
+      "arguments": {
+        "path": ""
+      }
+    },
+    {
+      "tool": "run_build"
+    }
+  ],
+  "stop_condition": true,
+  "confidence": 0.75
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 2 | Success: Yes
+{
+  "likely_cause": "Class renaming causing unresolved references",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": ""
+  },
+  "followup_tools": [
+    {
+      "tool": "inspect_file",
+      "path": "/project/path/to/renamed_class.cs"
+    }
+  ],
+  "stop_condition": true,
+  "confidence": 0.75
+}
+--------------------------------------------------
+PromptID: P04 | Category: Tool-use planning | Run: 3 | Success: Yes
+{
+  "likely_cause": "Class renaming causing unresolved references",
+  "first_tool_to_call": "search_symbols",
+  "first_tool_arguments": {
+    "symbol_name": ""
+  },
+  "followup_tools": [
+    {
+      "tool": "inspect_file",
+      "path": "/project/path/OldName.cs"
+    }
+  ],
+  "stop_condition": true,
+  "confidence": 0.75
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 1 | Success: Yes
+{
+    "summary": "Model A is faster than Model B but occasionally makes unsupported factual claims; both failed to adhere strictly to requested schema.",
+    "key_findings": {
+        "speed_comparison": {"Model_A": 4.2, "Model_B": 2.8},
+        "schema_adherence": {"Model_A": true, "Model_B": false}
+    },
+    "recommendation": "Prioritize Model A for tasks requiring structured output despite its slower response time; improve schema adherence in both models.",
+    "caveats": ["Benchmark prioritizes reliability and structure over speed.", "Both were tested with the same context length and token limit."]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 2 | Success: Yes
+{
+    "summary": "Model A is faster than Model B but occasionally makes unsupported factual claims; both failed to adhere strictly to requested schemas.",
+    "key_findings": {
+        "speed_comparison": {"Model_A": 4.2, "Model_B": 2.8},
+        "schema_adherence": {"Model_A": true, "Model_B": false}
+    },
+    "recommendation": "Choose Model A for tasks requiring structured output and reliability over speed.",
+    "caveats": [
+        "Both models have limitations with factual claims (A) or schema adherence (B).",
+        "The benchmark emphasizes the importance of reliable outputs."
+    ]
+}
+--------------------------------------------------
+PromptID: P05 | Category: Summarization | Run: 3 | Success: Yes
+{
+    "summary": "Model A is faster than Model B but occasionally makes unsupported factual claims; both failed to adhere strictly to requested schemas.",
+    "key_findings": {
+        "speed_comparison": {"Model_A": 4.2, "Model_B": 2.8},
+        "schema_adherence": {"Model_A_issues": true, "Model_B_failures": 2}
+    },
+    "recommendation": "Prioritize Model A for tasks requiring structured output despite its slower speed and occasional factual inaccuracies.",
+    "caveats": [
+        "Both models have the same context length and token limit constraints.",
+        "Benchmark emphasizes reliability over raw processing time."
+    ]
+}
+--------------------------------------------------
