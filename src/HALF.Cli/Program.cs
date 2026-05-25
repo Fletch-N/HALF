@@ -1,16 +1,24 @@
-﻿using HALF.Host;
+﻿using Microsoft.Extensions.Configuration;
+using HALF.Host;
 
 namespace HALF.Cli;
 
 internal static class Program
 {
-    private static readonly IHalfHostRuntime Host = HalfHost.CreateDefault();
-
     private static int Main(string[] args)
     {
+        var config = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddEnvironmentVariables(prefix: "HALF_")
+        .Build();
+
+        HalfHostConfiguration hostConfig = LoadHostConfiguration(config.GetRequiredSection("Host"), AppContext.BaseDirectory);
+
+        var host = HalfHost.CreateRuntime(hostConfig);
+
         if (args.Length == 0 || IsHelp(args[0]))
         {
-            PrintHelp();
+            PrintHelp(host);
             return 0;
         }
 
@@ -20,10 +28,27 @@ internal static class Program
             return 0;
         }
 
-        var result = Host.Execute(args[0], [.. args.Skip(1)]);
+        var result = host.Execute(args[0], [.. args.Skip(1)]);
 
         Console.WriteLine(result.Message);
         return result.ExitCode;
+    }
+
+    private static HalfHostConfiguration LoadHostConfiguration(IConfiguration config, string basePath)
+    {
+        return new(
+            new HalfHostRuntimeOptions(
+                new Uri(config["Runtime:Endpoint"] ?? "http://localhost:11434"),
+                config["Runtime:RuntimeName"] ?? "ollama",
+                config["Runtime:ModelName"] ?? "qwen3.5:4b",
+                config["Runtime:Quantization"]),
+            new HalfHostStorageOptions(
+                config["Storage:SqlitePath"] ?? Path.Combine(basePath, "data/half.db"),
+                config["Storage:JsonlDirectoryPath"] ?? Path.Combine(basePath, "data/jsonl")),
+            new HalfHostTelemetryOptions(
+                bool.TryParse(config["Telemetry:IsEnabled"], out var isEnabled) && isEnabled,
+                config["Telemetry:ActivitySourceName"] ?? "HALF.Host",
+                config["Telemetry:MeterName"] ?? "HALF.Host"));
     }
 
     private static bool IsHelp(string argument) =>
@@ -36,14 +61,14 @@ internal static class Program
         string.Equals(argument, "--version", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(argument, "-v", StringComparison.OrdinalIgnoreCase);
 
-    private static void PrintHelp()
+    private static void PrintHelp(IHalfHostRuntime host)
     {
         Console.WriteLine("HALF CLI");
         Console.WriteLine("Humble Agentic Lightweight Framework");
         Console.WriteLine();
         Console.WriteLine("Scaffolded commands:");
 
-        foreach (var command in Host.Commands)
+        foreach (var command in host.Commands)
         {
             Console.WriteLine($"  {command.Name} - {command.Description}");
         }

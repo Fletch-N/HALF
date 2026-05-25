@@ -4,10 +4,32 @@ namespace HALF.Host.Tests;
 
 public sealed class HalfHostRuntimeTests
 {
+    private readonly HalfHostConfiguration configuration = new(
+            new HalfHostRuntimeOptions(
+                new Uri("http://192.168.1.20:11434"),
+                "ollama-lan",
+                "phi4-mini:3.8b",
+                "q4_k_m"),
+            new HalfHostStorageOptions(
+                "state/half.sqlite",
+                "state/jsonl"),
+            new HalfHostTelemetryOptions(
+                false,
+                "HALF.Host.Tests",
+                "HALF.Host.Tests"));
+
     [Fact]
-    public void CreateDefault_ExposesExpectedCommands()
+    public void CreateRuntime_WithConfiguration_ExposesProvidedConfiguration()
     {
-        var runtime = HalfHost.CreateDefault();
+        var runtime = HalfHost.CreateRuntime(configuration);
+
+        Assert.Equal(configuration, runtime.Configuration);
+    }
+
+    [Fact]
+    public void CreateRuntime_ExposesExpectedCommands()
+    {
+        var runtime = HalfHost.CreateRuntime(configuration);
 
         var commands = runtime.Commands;
 
@@ -27,7 +49,7 @@ public sealed class HalfHostRuntimeTests
     [InlineData("status", "Status command is scaffolded through HALF.Host but not implemented yet.")]
     public void Execute_KnownCommand_ReturnsSuccessfulScaffoldResult(string commandName, string expectedMessage)
     {
-        var runtime = HalfHost.CreateDefault();
+        var runtime = HalfHost.CreateRuntime(configuration);
 
         var result = runtime.Execute(commandName, []);
 
@@ -38,7 +60,7 @@ public sealed class HalfHostRuntimeTests
     [Fact]
     public void Execute_UnknownCommand_ReturnsFailureResult()
     {
-        var runtime = HalfHost.CreateDefault();
+        var runtime = HalfHost.CreateRuntime(configuration);
 
         var result = runtime.Execute("unknown", []);
 

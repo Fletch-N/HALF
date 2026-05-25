@@ -4,18 +4,28 @@ namespace HALF.Host;
 
 public static class HalfHost
 {
-    public static IHalfHostRuntime CreateDefault() =>
-        new HalfHostRuntime(
+
+    public static IHalfHostRuntime CreateRuntime(HalfHostConfiguration? configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        return new HalfHostRuntime(
+            configuration,
         [
             new RunCommand(),
             new BenchmarkCommand(),
             new TraceCommand(),
             new StatusCommand()
         ]);
+    }
 }
 
-internal sealed class HalfHostRuntime(IReadOnlyList<IHostCommand> commands) : IHalfHostRuntime
+internal sealed class HalfHostRuntime(
+    HalfHostConfiguration configuration,
+    IReadOnlyList<IHostCommand> commands) : IHalfHostRuntime
 {
+    public HalfHostConfiguration Configuration { get; } = configuration;
+
     private readonly IReadOnlyList<IHostCommand> commands = commands;
 
     public IReadOnlyList<CommandDescriptor> Commands =>

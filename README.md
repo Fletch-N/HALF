@@ -59,6 +59,14 @@ dotnet build HALF.slnx -v minimal
 dotnet run --project ./src/HALF.Cli help
 ```
 
+**Switch host settings by environment:**
+```powershell
+$env:HALF_ENVIRONMENT = "Production"
+dotnet run --project ./src/HALF.Cli status
+```
+
+`src/HALF.Cli/appsettings.json` contains the baseline host settings. Add overrides in `appsettings.{Environment}.json`, and use environment variables such as `HALF_Host__Runtime__Endpoint` when you need per-machine or secret-adjacent overrides without editing files.
+
 **Run the test surface:**
 ```powershell
 dotnet test -v minimal

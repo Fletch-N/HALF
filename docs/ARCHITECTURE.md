@@ -55,6 +55,7 @@ Operator entrypoint for local workflows. This project will own top-level command
 ### HALF.Host
 
 Runtime composition boundary. This project will wire together configuration, runtime adapters, policies, observability, and background services.
+The host configuration contract is a typed model composed from explicit runtime, storage, and telemetry options so callers can populate one coherent source of truth without collapsing those concerns into one flat object.
 
 ### HALF.Agent
 
