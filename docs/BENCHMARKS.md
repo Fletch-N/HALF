@@ -153,7 +153,6 @@ These fields align with the current telemetry direction in HALF.
 | Error category | text | Optional | Only if failed |
 
 ## Results Summary
-Use one row per model/configuration after completing the prompt suite.
 
 | Model | Quant | Params | Avg latency (ms) | Avg tok/s | Peak RAM (GB) | Peak VRAM (GB)  | Overall rank |
 | :---- | :---- | :----- | ---------------: | --------: | ------------: | -------------:  | -----------: |

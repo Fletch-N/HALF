@@ -56,6 +56,7 @@ Operator entrypoint for local workflows. This project will own top-level command
 
 Runtime composition boundary. This project will wire together configuration, runtime adapters, policies, observability, and background services.
 The host configuration contract is a typed model composed from explicit runtime, storage, and telemetry options so callers can populate one coherent source of truth without collapsing those concerns into one flat object.
+The current host bootstrap path keeps configuration binding in `HALF.Cli`, then passes that typed model into an explicit `HALF.Host` service-registration composition root that wires the runtime and command surfaces.
 
 ### HALF.Agent
 
@@ -100,10 +101,11 @@ This keeps the first implementation phase focused on the observability baseline 
 The first runtime topology is:
 
 1. `HALF.Cli` invokes local workflows.
-2. `HALF.Host` composes services.
-3. `HALF.Watch` records run and benchmark evidence.
-4. `HALF.Host` talks to an Ollama endpoint on localhost.
-5. Prometheus and Grafana consume exported metrics while JSONL traces remain the durable local record.
+2. `HALF.Cli` binds one `HalfHostConfiguration` model from app settings and environment overrides.
+3. `HALF.Host` composes services through explicit dependency-injection registrations.
+4. `HALF.Watch` records run and benchmark evidence.
+5. `HALF.Host` talks to an Ollama endpoint on localhost.
+6. Prometheus and Grafana consume exported metrics while JSONL traces remain the durable local record.
 
 ## Deployment assumptions
 

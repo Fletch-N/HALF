@@ -14,7 +14,7 @@ internal static class Program
 
         HalfHostConfiguration hostConfig = LoadHostConfiguration(config.GetRequiredSection("Host"), AppContext.BaseDirectory);
 
-        var host = HalfHost.CreateRuntime(hostConfig);
+        using var host = HalfHost.Build(hostConfig);
 
         if (args.Length == 0 || IsHelp(args[0]))
         {

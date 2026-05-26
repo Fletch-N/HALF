@@ -1,4 +1,5 @@
 using HALF.Host;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HALF.Host.Tests;
 
@@ -19,20 +20,45 @@ public sealed class HalfHostRuntimeTests
                 "HALF.Host.Tests"));
 
     [Fact]
-    public void CreateRuntime_WithConfiguration_ExposesProvidedConfiguration()
+    public void Build_WithConfiguration_ExposesProvidedConfiguration()
     {
-        var runtime = HalfHost.CreateRuntime(configuration);
+        using var runtime = HalfHost.Build(configuration);
 
         Assert.Equal(configuration, runtime.Configuration);
     }
 
     [Fact]
-    public void CreateRuntime_ExposesExpectedCommands()
+    public void Build_ExposesExpectedCommands()
     {
-        var runtime = HalfHost.CreateRuntime(configuration);
+        using var runtime = HalfHost.Build(configuration);
 
         var commands = runtime.Commands;
 
+        Assert.Collection(
+            commands,
+            command => Assert.Equal(new CommandDescriptor("run", "Execute a local model run through the host runtime."), command),
+            command => Assert.Equal(new CommandDescriptor("benchmark", "Capture benchmark evidence for a local runtime."), command),
+            command => Assert.Equal(new CommandDescriptor("trace", "Inspect or export recorded traces for prior executions."), command),
+            command => Assert.Equal(new CommandDescriptor("status", "Report the current runtime and observability status."), command));
+    }
+
+    [Fact]
+    public void RegisterHostServices_RegistersRuntimeConfigurationAndCommands()
+    {
+        var services = HalfHost.RegisterHostServices(new ServiceCollection(), configuration);
+
+        using var serviceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+
+        var registeredConfiguration = serviceProvider.GetRequiredService<HalfHostConfiguration>();
+        var commands = serviceProvider.GetServices<IHostCommand>()
+            .Select(command => command.Descriptor)
+            .ToArray();
+
+        Assert.Same(configuration, registeredConfiguration);
         Assert.Collection(
             commands,
             command => Assert.Equal(new CommandDescriptor("run", "Execute a local model run through the host runtime."), command),
@@ -49,7 +75,7 @@ public sealed class HalfHostRuntimeTests
     [InlineData("status", "Status command is scaffolded through HALF.Host but not implemented yet.")]
     public void Execute_KnownCommand_ReturnsSuccessfulScaffoldResult(string commandName, string expectedMessage)
     {
-        var runtime = HalfHost.CreateRuntime(configuration);
+        using var runtime = HalfHost.Build(configuration);
 
         var result = runtime.Execute(commandName, []);
 
@@ -60,7 +86,7 @@ public sealed class HalfHostRuntimeTests
     [Fact]
     public void Execute_UnknownCommand_ReturnsFailureResult()
     {
-        var runtime = HalfHost.CreateRuntime(configuration);
+        using var runtime = HalfHost.Build(configuration);
 
         var result = runtime.Execute("unknown", []);
 

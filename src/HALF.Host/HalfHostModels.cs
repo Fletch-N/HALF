@@ -24,7 +24,7 @@ public sealed record CommandExecutionResult(int ExitCode, string Message);
 
 public sealed record CommandDescriptor(string Name, string Description);
 
-public interface IHalfHostRuntime
+public interface IHalfHostRuntime : IDisposable
 {
     CommandExecutionResult Execute(string commandName, string[] args);
     IReadOnlyList<CommandDescriptor> Commands { get; }
