@@ -1,4 +1,5 @@
 using HALF.Host.Commands;
+using HALF.Watch;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HALF.Host;
@@ -25,6 +26,13 @@ public static class HalfHost
     public static IServiceCollection RegisterHostServices(IServiceCollection services, HalfHostConfiguration configuration)
     {
         services.AddSingleton(configuration);
+
+        services.AddSingleton<IRunRecordRepository>(_ =>
+        {
+            var repository = new SqliteRunRecordRepository(configuration.Storage.SqlitePath);
+            repository.EnsureInitialized();
+            return repository;
+        });
 
         services.AddSingleton<IHostCommand, RunCommand>();
         services.AddSingleton<IHostCommand, BenchmarkCommand>();

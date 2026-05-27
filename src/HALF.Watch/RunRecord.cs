@@ -8,7 +8,12 @@ public sealed record RunRecord(
     bool IsStreaming,
     RunOutcome Outcome);
 
-public sealed record RunIdentity(Guid RequestId);
+public sealed record RunIdentity(Guid RequestId, DateTimeOffset ExecutedAtUtc)
+{
+    public RunIdentity(Guid requestId) : this(requestId, DateTimeOffset.UtcNow)
+    {
+    }
+};
 public sealed record RunModel(string RuntimeName, string ModelName, string? Quantization);
 public sealed record RunTiming(int TotalLatencyMs, int LoadLatencyMs, int PromptLatencyMs, int GenerationLatencyMs);
 public sealed record RunTokens(int PromptTokens, int CompletionTokens);
@@ -21,6 +26,7 @@ public static class RunRecordSchema
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["request_id"] = "Identity.RequestId",
+            ["executed_at_utc"] = "Identity.ExecutedAtUtc",
             ["runtime_name"] = "Model.RuntimeName",
             ["model_name"] = "Model.ModelName",
             ["quantization"] = "Model.Quantization",

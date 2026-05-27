@@ -50,6 +50,8 @@ The canonical CLR model is `RunRecord`, composed from small value records so the
 
 `quantization` and `error_category` remain nullable because they are conditional execution facts rather than universally available values.
 
+Issue #5 persists these canonical fields into SQLite so completed executions become durable and queryable through the operator command surface.
+
 ## Storage & Persistence Model
 Local evidence collection relies entirely on zero-infrastructure, file-based persistence to ensure rapid execution and native cross-platform portability:
 
@@ -64,6 +66,11 @@ graph TD
 * **Canonical Source of Truth:** SQLite captures indexed run, benchmark, and optimization records. JSONL trace files contain immutable, chronological per-run event streams.
 * **Operational Visibility:** OpenTelemetry metrics and traces are exposed natively via standard .NET `ActivitySource` and `Meter` APIs.
 * **Visualization Layer:** Local Prometheus instances scrape the metric endpoints, feeding pre-configured Grafana dashboards. Grafana and Prometheus are secondary consumer layers; they are never treated as the primary source of truth.
+
+### SQLite Implementation Boundary (v0.2)
+* SQLite schema bootstrapping is intentionally lightweight (`CREATE TABLE IF NOT EXISTS`) for the initial indexed run metadata surface.
+* Entity Framework Core is intentionally deferred for v0.2 to keep the persistence path minimal and directly mapped to the canonical run record envelope.
+* EF Core can be adopted later if domain/query complexity or migration/versioning requirements outgrow the lightweight approach.
 
 ## Progressive Scale Path
 Adhering to the principle of avoiding speculative complexity, external infrastructure dependencies are strictly deferred until operational boundaries demand them:

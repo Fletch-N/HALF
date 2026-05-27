@@ -54,6 +54,7 @@ public sealed class RunRecordTests
         var expected = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["request_id"] = "Identity.RequestId",
+            ["executed_at_utc"] = "Identity.ExecutedAtUtc",
             ["runtime_name"] = "Model.RuntimeName",
             ["model_name"] = "Model.ModelName",
             ["quantization"] = "Model.Quantization",

@@ -72,6 +72,26 @@ dotnet run --project ./src/HALF.Cli status
 dotnet test -v minimal
 ```
 
+## SQLite Notes
+HALF stores indexed run metadata in a local SQLite file.
+
+* No SQLite server, Docker container, or separate database install is required.
+* The default local path is `data/half.db` (see `Host:Storage:SqlitePath` in appsettings).
+* Optional inspection tools: `sqlite3` CLI or DB Browser for SQLite.
+
+**Quick verification of persistence:**
+```powershell
+dotnet run --project ./src/HALF.Cli run
+dotnet run --project ./src/HALF.Cli trace --limit 5
+dotnet run --project ./src/HALF.Cli status
+```
+
+Override SQLite path for your machine when needed:
+```powershell
+$env:HALF_Host__Storage__SqlitePath = "C:\\HALF\\data\\half.db"
+dotnet run --project ./src/HALF.Cli run
+```
+
 ## Solution Directory
 * **`src/HALF.Cli`** — Operator CLI and future command surface
 * **`src/HALF.Host`** — Runtime host and service wiring boundary

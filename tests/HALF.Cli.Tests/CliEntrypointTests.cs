@@ -50,9 +50,7 @@ public sealed class CliEntrypointTests
         var result = InvokeMain(["trace"]);
 
         Assert.Equal(0, result.ExitCode);
-        Assert.Equal(
-            $"Trace command is scaffolded through HALF.Host but not implemented yet.{Environment.NewLine}",
-            result.Output);
+        Assert.Equal($"No persisted runs found.{Environment.NewLine}", result.Output);
     }
 
     [Fact]
